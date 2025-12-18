@@ -59,7 +59,7 @@ The workflow is designed for **IQ-TREE-based ASR on indel-aware alignments**, co
     msas/
     templates/
     terms_of_use.md
-``
+
 
 ---
 
