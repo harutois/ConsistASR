@@ -48,7 +48,7 @@ The workflow is designed for **IQ-TREE-based ASR on indel-aware alignments**, co
     (e.g., `ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta`)
 - **AlphaFold** run for the ancestral sequence of a specific node (Node112, Anc-SzR, etc.), producing a directory like:
 
-  ```text
+```text
   Node112/
     fold_YYYY_MM_DD_HH_MM_..._summary_confidences_0.json
     fold_YYYY_MM_DD_HH_MM_..._summary_confidences_1.json
