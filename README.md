@@ -461,16 +461,8 @@ This produces the same set of PDBs and log files as the IQ-TREE pipeline, now ba
 
 ## Citation
 
-*(to be updated once the corresponding manuscript is published)*
-
 If you use ConsistASR in your work, please cite:
 
 * **[Manuscript title, authors, journal, year]** – *TBD*
-
----
-
-## License
-
-*(to be filled with the appropriate open-source license, e.g. MIT / BSD / GPL, etc.)*
 
 ---
