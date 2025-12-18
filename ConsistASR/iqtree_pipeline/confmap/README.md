@@ -60,7 +60,7 @@ The workflow is designed for **IQ-TREE-based ASR on indel-aware alignments**, co
     templates/
     terms_of_use.md
 ```
-  Filenames **may** contain the node label (e.g. `node233`); if so, those are preferred when choosing the best model.
+  Filenames **may** contain the node label (e.g. `node112`); if so, those are preferred when choosing the best model.
 
 ---
 
