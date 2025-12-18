@@ -60,7 +60,6 @@ The workflow is designed for **IQ-TREE-based ASR on indel-aware alignments**, co
     templates/
     terms_of_use.md
 
-
 ---
 
 ## 3. Directory layout and basic idea
