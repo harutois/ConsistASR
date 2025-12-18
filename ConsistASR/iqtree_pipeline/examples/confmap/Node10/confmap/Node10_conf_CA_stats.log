@@ -1,0 +1,6 @@
+[INFO] Node Node10 per-residue (CA-only) statistics
+PP_sitewise: mean=0.497, min=0.084, max=1.000, median=0.428, n=343
+pLDDT_CA:    mean=90.653, min=44.880, max=98.370, median=95.070, n=203
+PP_CA:       mean=67.292, min=13.780, max=100.000, median=67.880, n=203
+PP-PLDDT_CA: mean=38.320, min=13.330, max=72.440, median=38.420, n=203
+PPxPLDDT_CA: mean=61.892, min=8.540, max=98.340, median=61.200, n=203

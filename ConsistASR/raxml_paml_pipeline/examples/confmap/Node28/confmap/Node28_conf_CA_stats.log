@@ -1,0 +1,6 @@
+[INFO] Node Node28 per-residue (CA-only) statistics
+PP_sitewise: mean=0.497, min=0.083, max=1.000, median=0.417, n=343
+pLDDT_CA:    mean=90.940, min=44.540, max=98.450, median=95.680, n=203
+PP_CA:       mean=66.618, min=13.300, max=100.000, median=66.000, n=203
+PP-PLDDT_CA: mean=37.840, min=13.350, max=72.340, median=38.260, n=203
+PPxPLDDT_CA: mean=61.481, min=9.890, max=98.450, median=60.400, n=203

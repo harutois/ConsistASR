@@ -1,0 +1,92 @@
+
+RAxML-NG v. 1.2.2 released on 11.04.2024 by The Exelixis Lab.
+Developed by: Alexey M. Kozlov and Alexandros Stamatakis.
+Contributors: Diego Darriba, Tomas Flouri, Benoit Morel, Sarah Lutteropp, Ben Bettisworth, Julia Haag, Anastasis Togkousidis.
+Latest version: https://github.com/amkozlov/raxml-ng
+Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!forum/raxml
+
+System: Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz, 2 cores, 16 GB RAM
+
+RAxML-NG was called at 11-Dec-2025 11:11:55 as follows:
+
+raxml-ng --evaluate --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model BIN+G --tree ASR_toy_7tm_rhodopsin.treefile --prefix ASR_toy_7tm_rhodopsin_indel_eval --outgroup OG_WP_285271495,OG_WP_136361479 --seed 12345
+
+Analysis options:
+  run mode: Evaluate tree likelihood
+  start tree(s): user
+  outgroup taxa: OG_WP_285271495,OG_WP_136361479
+  random seed: 12345
+  tip-inner: OFF
+  pattern compression: ON
+  per-rate scalers: OFF
+  site repeats: ON
+  logLH epsilon: general: 0.100000, brlen-triplet: 1000.000000
+  branch lengths: proportional (ML estimate, algorithm: NR-FAST)
+  SIMD kernels: AVX2
+  parallelization: coarse-grained (auto), PTHREADS (auto)
+
+[00:00:00] Reading alignment from file: ASR_toy_7tm_rhodopsin_binary.phy
+[00:00:00] Loaded alignment with 18 taxa and 343 sites
+
+WARNING: Sequences HeR_WP_100389406 and HeR_WP_066598408 are exactly identical!
+WARNING: Sequences SzR_HDR73074 and SzR_TFH15433 are exactly identical!
+WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical!
+WARNING: Duplicate sequences found: 3
+
+NOTE: Reduced alignment (with duplicates and gap-only sites/taxa removed) 
+NOTE: was saved to: /Users/haruto/Desktop/temp/ConsistASR/examples/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
+
+Alignment comprises 1 partitions and 44 patterns
+
+Partition 0: noname
+Model: BIN+FO+G4m
+Alignment sites / patterns: 343 / 44
+Gaps: 0.00 %
+Invariant sites: 53.35 %
+
+
+NOTE: Binary MSA file created: ASR_toy_7tm_rhodopsin_indel_eval.raxml.rba
+
+Parallelization scheme autoconfig: 1 worker(s) x 1 thread(s)
+
+[00:00:00] Loading user starting tree(s) from: ASR_toy_7tm_rhodopsin.treefile
+Parallel reduction/worker buffer size: 1 KB  / 0 KB
+
+[00:00:00] Data distribution: max. partitions/sites/weight per thread: 1 / 44 / 352
+[00:00:00] Data distribution: max. searches per worker: 1
+
+Evaluating 1 trees
+
+[00:00:00] Tree #1, initial LogLikelihood: -1842.573038
+
+[00:00:00 -1842.573038] Initial branch length optimization
+[00:00:00 -1142.754519] Model parameter optimization (eps = 0.100000)
+
+[00:00:00] Tree #1, final logLikelihood: -1052.481955
+
+
+Optimized model parameters:
+
+   Partition 0: noname
+   Rate heterogeneity: GAMMA (4 cats, mean),  alpha: 2.245867 (ML),  weights&rates: (0.250000,0.320958) (0.250000,0.678847) (0.250000,1.075079) (0.250000,1.925116) 
+   Base frequencies (ML): 0.213045 0.786955 
+   Substitution rates (ML): 1.000000 
+
+
+Final LogLikelihood: -1052.481955
+
+AIC score: 2174.963909 / AICc score: 2183.172378 / BIC score: 2309.284475
+Free parameters (model + branch lengths): 35
+
+WARNING: Best ML tree contains 6 near-zero branches!
+
+Best ML tree with collapsed near-zero branches saved to: /Users/haruto/Desktop/temp/ConsistASR/examples/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
+Best ML tree saved to: /Users/haruto/Desktop/temp/ConsistASR/examples/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
+Optimized model saved to: /Users/haruto/Desktop/temp/ConsistASR/examples/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
+
+Execution log saved to: /Users/haruto/Desktop/temp/ConsistASR/examples/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
+
+Analysis started: 11-Dec-2025 11:11:55 / finished: 11-Dec-2025 11:11:55
+
+Elapsed time: 0.032 seconds
+

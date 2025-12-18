@@ -1,0 +1,73 @@
+
+
+IMPORTANT WARNING: Sequences HeR_WP_100389406 and HeR_WP_066598408 are exactly identical
+
+
+IMPORTANT WARNING: Sequences SzR_HDR73074 and SzR_TFH15433 are exactly identical
+
+
+IMPORTANT WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical
+
+IMPORTANT WARNING
+Found 3 sequences that are exactly identical to other sequences in the alignment.
+Normally they should be excluded from the analysis.
+
+Just in case you might need it, an alignment file with 
+sequence duplicates removed is printed to file ASR_toy_7tm_rhodopsin_binary.phy.reduced
+
+
+This is RAxML version 8.2.12 released by Alexandros Stamatakis on May 2018.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 44 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 0.00%
+
+RAxML marginal ancestral state computation
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heterogeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 44
+Name: No Name Provided
+DataType: BINARY/MORPHOLOGICAL
+Substitution Matrix: Uncorrected
+
+
+
+
+RAxML was called as follows:
+
+raxmlHPC -f A -m BINGAMMA -t ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree -s ASR_toy_7tm_rhodopsin_binary.phy -n ASR_toy_7tm_rhodopsin_binary -F 
+
+
+Marginal Ancestral Probabilities written to file:
+/Users/haruto/Desktop/temp/ConsistASR/examples/RAxML_marginalAncestralProbabilities.ASR_toy_7tm_rhodopsin_binary
+
+Ancestral Sequences based on Marginal Ancestral Probabilities written to file:
+/Users/haruto/Desktop/temp/ConsistASR/examples/RAxML_marginalAncestralStates.ASR_toy_7tm_rhodopsin_binary
+
+Node-laballed ROOTED tree written to file:
+/Users/haruto/Desktop/temp/ConsistASR/examples/RAxML_nodeLabelledRootedTree.ASR_toy_7tm_rhodopsin_binary
+
+
+Time for marginal ancestral state computation: 0.021579
+

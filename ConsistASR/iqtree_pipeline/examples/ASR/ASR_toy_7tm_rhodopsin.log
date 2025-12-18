@@ -1,0 +1,77 @@
+IQ-TREE version 3.0.1 for MacOS Intel 64-bit built Jul  9 2025
+Developed by Bui Quang Minh, Thomas Wong, Nhan Ly-Trong, Huaiyan Ren
+Contributed by Lam-Tung Nguyen, Dominik Schrempf, Chris Bielow,
+Olga Chernomor, Michael Woodhams, Diep Thi Hoang, Heiko Schmidt
+
+Host:    MacBook.local (AVX2, FMA3, 16 GB RAM)
+Command: iqtree3 -s toy_7tm_rhodopsin.fasta -m Q.PFAM+I+G4 -te toy_7tm_rhodopsin.fasta.treefile --ancestral -o OG_WP_285271495,OG_WP_136361479 -pre ASR_toy_7tm_rhodopsin -seed 12345
+Seed:    12345 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Thu Dec 11 11:11:37 2025
+Kernel:  AVX+FMA - 1 threads (4 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 4 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file toy_7tm_rhodopsin.fasta ... Fasta format detected
+Reading fasta file: done in 0.000276089 secs using 86.57% CPU
+Alignment most likely contains protein sequences
+Constructing alignment: done in 0.00124693 secs using 46.84% CPU
+Alignment has 18 sequences with 343 columns, 316 distinct patterns
+240 parsimony-informative, 40 singleton sites, 63 constant sites
+                         Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 4.60148e-05 secs using 89.1% CPU
+   1  HeR_WP_100389406          22.16%    passed     95.38%
+   2  HeR_WP_066598408          22.16%    passed     93.33%
+   3  HeR_WP_035950083          25.66%    failed      0.46%
+   4  HeR_WP_095673229          25.95%    passed     92.62%
+   5  HeR_AVZ43932              25.36%    passed     93.83%
+   6  HeR_HEX6952830            22.74%    passed     12.80%
+   7  HeR_MEK9135620            25.95%    passed     99.41%
+   8  HeR_HMA83780              11.08%    failed      0.28%
+   9  SzR_HDR73074              41.11%    passed     82.24%
+  10  SzR_TFH15433              41.11%    passed     16.12%
+  11  SzR_TE_S2S_00499          39.65%    passed     62.39%
+  12  SzR_AM_5_00977            41.11%    passed     12.19%
+  13  SzR_TE_5S_00009           41.11%    passed     57.17%
+  14  SzR_AM_5S_00009           41.40%    passed     23.86%
+  15  SzR_Ga0105045_102227662   37.32%    passed     99.26%
+  16  SzR_SAMEA_2622822         40.82%    passed     57.71%
+  17  OG_WP_285271495           20.12%    failed      0.81%
+  18  OG_WP_136361479           23.32%    passed     22.53%
+****  TOTAL                     30.45%  3 sequences failed composition chi2 test (p-value<5%; df=19)
+Reading input tree file toy_7tm_rhodopsin.fasta.treefile ...
+
+NOTE: 3 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.010)
+Thoroughly optimizing +I+G parameters from 10 start values...
+Init pinv, alpha: 0.000, 1.000 / Estimate: 0.015, 2.055 / LogL: -7576.114
+Init pinv, alpha: 0.020, 1.000 / Estimate: 0.016, 2.065 / LogL: -7576.111
+Init pinv, alpha: 0.041, 1.000 / Estimate: 0.016, 2.069 / LogL: -7576.112
+Init pinv, alpha: 0.061, 1.000 / Estimate: 0.016, 2.071 / LogL: -7576.113
+Init pinv, alpha: 0.082, 1.000 / Estimate: 0.016, 2.071 / LogL: -7576.111
+Init pinv, alpha: 0.102, 1.000 / Estimate: 0.016, 2.070 / LogL: -7576.112
+Init pinv, alpha: 0.122, 1.000 / Estimate: 0.016, 2.070 / LogL: -7576.112
+Init pinv, alpha: 0.143, 1.000 / Estimate: 0.016, 2.071 / LogL: -7576.112
+Init pinv, alpha: 0.163, 1.000 / Estimate: 0.016, 2.071 / LogL: -7576.112
+Init pinv, alpha: 0.184, 1.000 / Estimate: 0.016, 2.072 / LogL: -7576.112
+Optimal pinv,alpha: 0.016, 2.065 / LogL: -7576.111
+
+Parameters optimization took 2.278 sec
+Wrote distance file to... 
+BEST SCORE FOUND : -7576.111
+Ancestral state probabilities printed to ASR_toy_7tm_rhodopsin.state
+Total tree length: 14.935
+
+Total number of iterations: 0
+CPU time used for tree search: 0.000 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.000 sec (0h:0m:0s)
+Total CPU time used: 2.270 sec (0h:0m:2s)
+Total wall-clock time used: 2.381 sec (0h:0m:2s)
+
+Analysis results written to: 
+  IQ-TREE report:                ASR_toy_7tm_rhodopsin.iqtree
+  Maximum-likelihood tree:       ASR_toy_7tm_rhodopsin.treefile
+  Ancestral state:               ASR_toy_7tm_rhodopsin.state
+  Screen log file:               ASR_toy_7tm_rhodopsin.log
+
+Date and Time: Thu Dec 11 11:11:39 2025

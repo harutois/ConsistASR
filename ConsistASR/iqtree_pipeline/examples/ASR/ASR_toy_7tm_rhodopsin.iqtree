@@ -1,0 +1,126 @@
+IQ-TREE 3.0.1 built Jul  9 2025
+
+Input file name: toy_7tm_rhodopsin.fasta
+User tree file name: toy_7tm_rhodopsin.fasta.treefile
+Type of analysis: tree reconstruction
+Random seed number: 12345
+
+REFERENCES
+----------
+
+To cite IQ-TREE 3 please use:
+
+Thomas K.F. Wong, Nhan Ly-Trong, Huaiyan Ren, Hector Banos, Andrew J. Roger,
+Edward Susko, Chris Bielow, Nicola De Maio, Nick Goldman, Matthew W. Hahn,
+Gavin Huttley, Robert Lanfear, Bui Quang Minh (2025)
+IQ-TREE 3: Phylogenomic Inference Software using Complex Evolutionary Models.
+Submitted.
+
+Please also cite the following paper(s) for the feature(s) that you used:
+
+SEQUENCE ALIGNMENT
+------------------
+
+Input data: 18 sequences with 343 amino-acid sites
+Number of constant sites: 63 (= 18.3673% of all sites)
+Number of invariant (constant or ambiguous constant) sites: 63 (= 18.3673% of all sites)
+Number of parsimony informative sites: 240
+Number of distinct site patterns: 316
+
+SUBSTITUTION PROCESS
+--------------------
+
+Model of substitution: Q.PFAM+I+G4
+
+State frequencies: (model)
+
+Model of rate heterogeneity: Invar+Gamma with 4 categories
+Proportion of invariable sites: 0.0160
+Gamma shape alpha: 2.0647
+
+ Category  Relative_rate  Proportion
+  0         0              0.0160
+  1         0.3058         0.2460
+  2         0.6725         0.2460
+  3         1.0889         0.2460
+  4         1.9978         0.2460
+Relative rates are computed as MEAN of the portion of the Gamma distribution falling in the category.
+
+USER TREE
+---------
+
+Log-likelihood of the tree: -7576.1113 (s.e. 240.5965)
+Unconstrained log-likelihood (without tree): -1951.4064
+Number of free parameters (#branches + #model parameters): 35
+Akaike information criterion (AIC) score: 15222.2226
+Corrected Akaike information criterion (AICc) score: 15230.4310
+Bayesian information criterion (BIC) score: 15356.5431
+
+Total tree length (sum of branch lengths): 14.9348
+Sum of internal branch lengths: 7.3359 (49.1194% of tree length)
+
+NOTE: Tree is UNROOTED although outgroup taxon 'OG_WP_285271495' is drawn at root
+
+                                                         +--HeR_WP_100389406
+                                                    +----| (Node6)
+                                                    |    +--HeR_WP_066598408
+                                                 +--| (Node5)
+                                                 |  |  +--HeR_WP_095673229
+                                                 |  +--| (Node7)
+                                                 |     +--HeR_AVZ43932
+                                              +--| (Node4)
+                                              |  +--HeR_WP_035950083
+            +---------------------------------| (Node3)
+            |                                 |  +--HeR_HEX6952830
+            |                                 +--| (Node8)
+            |                                    |  +--HeR_MEK9135620
+            |                                    +--| (Node9)
+            |                                       +------HeR_HMA83780
++-----------| (Node2)
+|           |                  +----SzR_HDR73074
+|           |             +----| (Node13)
+|           |             |    +----SzR_TFH15433
+|           |        +----| (Node12)
+|           |        |    +--------SzR_TE_S2S_00499
+|           |    +---| (Node11)
+|           |    |   |   +------SzR_Ga0105045_102227662
+|           |    |   +---| (Node14)
+|           |    |       +----------------SzR_SAMEA_2622822
+|           +----| (Node10)
+|                |      +--SzR_AM_5_00977
+|                +------| (Node15)
+|                       |  +--SzR_TE_5S_00009
+|                       +--| (Node16)
+|                          +--SzR_AM_5S_00009
+| (Node1)
++------------OG_WP_285271495
+|
++-------------OG_WP_136361479
+
+Tree in newick format:
+
+((((((HeR_WP_100389406:0.0908322675,HeR_WP_066598408:0.0539386327)Node6:0.3706982344,(HeR_WP_095673229:0.2572730762,HeR_AVZ43932:0.2421070056)Node7:0.1218988892)Node5:0.2140488158,HeR_WP_035950083:0.2579909577)Node4:0.2484031510,(HeR_HEX6952830:0.2464419034,(HeR_MEK9135620:0.1191522394,HeR_HMA83780:0.5638790798)Node9:0.1352244133)Node8:0.1894537039)Node3:2.5412337575,((((SzR_HDR73074:0.4136772109,SzR_TFH15433:0.4087421471)Node13:0.4349428174,SzR_TE_S2S_00499:0.6767657391)Node12:0.3772740138,(SzR_Ga0105045_102227662:0.5622232734,SzR_SAMEA_2622822:1.2925219135)Node14:0.3433313371)Node11:0.3266213592,(SzR_AM_5_00977:0.2035992787,(SzR_TE_5S_00009:0.0985800051,SzR_AM_5S_00009:0.0703619035)Node16:0.1704657145)Node15:0.5192884666)Node10:0.3937850326)Node2:0.9492100671,OG_WP_285271495:0.9742583038,OG_WP_136361479:1.0665669894)Node1;
+
+ALISIM COMMAND
+--------------
+To simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis, you can use the following command:
+
+--alisim simulated_MSA -t ASR_toy_7tm_rhodopsin.treefile -m "Q.PFAM+I{0.0159765}+G4{2.0647}" --length 343
+
+To mimic the alignment used to produce this analysis, i.e. simulate an alignment of the same length as the original alignment, using the tree and model parameters estimated from this analysis *and* copying the same gap positions as the original alignment, you can use the following command:
+
+iqtree -s toy_7tm_rhodopsin.fasta --alisim mimicked_MSA
+
+To simulate any number of alignments in either of the two commandlines above, use the --num-alignments options, for example mimic 100 alignments you would use the command line:
+
+iqtree -s toy_7tm_rhodopsin.fasta --alisim mimicked_MSA --num-alignments 100
+
+For more information on using AliSim, please visit: www.iqtree.org/doc/AliSim
+
+TIME STAMP
+----------
+
+Date and time: Thu Dec 11 11:11:39 2025
+Total CPU time used: 2.2702 seconds (0h:0m:2s)
+Total wall-clock time used: 2.38355 seconds (0h:0m:2s)
+

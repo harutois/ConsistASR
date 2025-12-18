@@ -1,0 +1,30 @@
+name: ConsistASR
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # --- Python & core libs ---
+  - python>=3.10
+  - pip
+  - numpy
+  - pandas
+
+  # --- ASR / phylogeny core tools ---
+  - iqtree=3.0.1
+  - raxml=8.2.13
+  - raxml-ng=1.2.2
+  - paml=4.10.7
+  - mafft=7.525
+  - fasttree=2.2.0
+
+  # --- sequence utilities / clustering ---
+  - seqkit=2.10.1
+  - cd-hit=4.8.1
+  - trimal
+
+  # --- Python libraries used by the pipelines ---
+  - biopython=1.85
+  - gemmi=0.7.3
+  - ete3=3.1.3
