@@ -11,7 +11,7 @@ The repository provides:
 
 ![indel_aware](images/indel_aware.png)
 
-- **Confidence mapping (“confmap”)** scripts to embed ASR posterior probability (PP) and pLDDT into B-factors of AlphaFold models
+- **Confidence mapping (“confmap”)** scripts to embed ASR posterior probability (PP), PPxpLDDT and PP--pLDDT into B-factors of AlphaFold models
 
 ![confmap](images/confmap.png)
 
