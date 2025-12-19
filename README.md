@@ -8,72 +8,21 @@ The repository provides:
 
 - An **IQ-TREE–based indel-aware pipeline** (`iqtree_pipeline/indel_aware`)
 - A corresponding **RAxML + PAML indel-aware pipeline** (`raxml_paml_pipeline/indel_aware`)
-- **Confidence mapping (“confmap”)** scripts to embed ASR posterior probability (PP) and pLDDT into B-factors of AlphaFold models
-- **FASTA ID utilities** to sanitize headers before going through PHYLIP-style formats
-- A simple **pre-clustering / filtering script** to reduce very large FASTA sets before tree building
 
 ![indel_aware](images/indel_aware.png)
+
+- **Confidence mapping (“confmap”)** scripts to embed ASR posterior probability (PP) and pLDDT into B-factors of AlphaFold models
+
+![confmap](images/confmap.png)
+
+- **FASTA ID utilities** to sanitize headers before going through PHYLIP-style formats
+- A simple **pre-clustering / filtering script** to reduce very large FASTA sets before tree building
 
 The design philosophy is:
 
 - Prefer **small, explicit scripts** over a fully “black-box” pipeline
 - Each major step is a separate script with a clear interface
 - Users are encouraged to check models, trees, and ASR settings at each stage
-
----
-
-## Repository layout
-
-```text
-ConsistASR
-├── README.md
-├── environment.yml
-├── fasta_id_tools
-│   ├── README.md
-│   ├── fasta_rename_sequential.py
-│   ├── fasta_sanitize_id_underscore.py
-│   └── fasta_truncate_id_simple.py
-├── iqtree_pipeline
-│   ├── confmap
-│   │   ├── README.md
-│   │   ├── map_confidence_to_bfactor.py
-│   │   └── run_confmap_iqtree.sh
-│   ├── examples
-│   │   ├── ASR/        # IQ-TREE ASR outputs for toy 7TM rhodopsin dataset
-│   │   ├── Tree/       # IQ-TREE tree search outputs
-│   │   ├── confmap/    # Example confmap outputs for Node10
-│   │   ├── indel_aware/# Example indel-aware outputs for IQ-TREE pipeline
-│   │   └── toy_7tm_rhodopsin.fasta
-│   └── indel_aware
-│       ├── README.md
-│       ├── map_raxml_to_iqtree_nodes.py
-│       ├── msa_to_binary.py
-│       ├── run_indel_aware_iqtree.sh
-│       └── state_and_indel_to_fasta.py
-├── precluster_tools
-│   ├── README.md
-│   └── filter_cluster_generic.sh
-└── raxml_paml_pipeline
-    ├── confmap
-    │   ├── README.md
-    │   ├── extract_pp_from_paml_rst.py
-    │   ├── map_confidence_to_bfactor.py
-    │   └── run_confmap_paml.sh
-    ├── examples
-    │   ├── ASR/        # PAML ASR example (toy 7TM rhodopsin)
-    │   ├── Tree/       # RAxML tree example
-    │   ├── confmap/    # Example confmap outputs for Node28
-    │   ├── indel_aware/# Example indel-aware outputs for RAxML + PAML pipeline
-    │   └── toy_7tm_rhodopsin.fasta
-    └── indel_aware
-        ├── README.md
-        ├── map_raxml_to_paml_nodes_from_rst.py
-        ├── msa_to_binary.py
-        ├── paml_state_and_indel_to_fasta.py
-        └── run_indel_aware_paml.sh
-```
-
-Each subdirectory (`iqtree_pipeline/indel_aware`, `iqtree_pipeline/confmap`, `raxml_paml_pipeline/indel_aware`, `raxml_paml_pipeline/confmap`, `fasta_id_tools`, `precluster_tools`) has its own `README.md` describing the interface and usage in more detail.
 
 ---
 
