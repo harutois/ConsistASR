@@ -12,7 +12,7 @@ The repository provides:
 - **FASTA ID utilities** to sanitize headers before going through PHYLIP-style formats
 - A simple **pre-clustering / filtering script** to reduce very large FASTA sets before tree building
 
-https://github.com/harutois/ConsistASR/commit/94177f9e09fea5a33bd4c723e2ef8771c204127c
+![indel_aware](https://github.com/harutois/ConsistASR/commit/94177f9e09fea5a33bd4c723e2ef8771c204127c)
 
 The design philosophy is:
 
