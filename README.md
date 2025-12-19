@@ -12,6 +12,8 @@ The repository provides:
 - **FASTA ID utilities** to sanitize headers before going through PHYLIP-style formats
 - A simple **pre-clustering / filtering script** to reduce very large FASTA sets before tree building
 
+![indel_aware](images/indel_aware.png)
+
 The design philosophy is:
 
 - Prefer **small, explicit scripts** over a fully “black-box” pipeline
