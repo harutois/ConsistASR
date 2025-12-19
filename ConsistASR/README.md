@@ -25,7 +25,6 @@ The design philosophy is:
 ```text
 ConsistASR
 ├── README.md
-├── environment.yml
 ├── fasta_id_tools
 │   ├── README.md
 │   ├── fasta_rename_sequential.py
