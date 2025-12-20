@@ -369,10 +369,6 @@ If you use this pipeline in a publication, please cite:
 * RAxML (classic RAxML)
 * PAML
 
-and the *ConsistASR* methodology paper (once available).
-
-```text
-[To be updated with the final ConsistASR reference]
-```
+and the *ConsistASR* paper.
 
 ---

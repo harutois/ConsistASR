@@ -25,7 +25,7 @@ The repository provides:
 From the top-level `ConsistASR` directory:
 
 ```bash
-git clone https://github.com/yourname/ConsistASR.git
+git clone https://github.com/harutois/ConsistASR.git
 cd ConsistASR
 mamba env create -f environment.yml   # or: conda env create -f environment.yml
 conda activate ConsistASR
@@ -37,10 +37,16 @@ For detailed installation, pipeline descriptions, and examples, please see the m
 
 ---
 
+## Reference
+
+- Aadland, K., Pugh, C., Kolaczkowski, B. (2019). High-Throughput Reconstruction of Ancestral Protein Sequence, Structure, and Molecular Function. In: Sikosek, T. (eds) Computational Methods in Protein Evolution. Methods in Molecular Biology, vol 1851. Humana Press, New York, NY. https://doi.org/10.1007/978-1-4939-8736-8_8
+
+---
+
 ## Citation
 
 If you use ConsistASR in your work, please cite:
 
-* **[Manuscript title, authors, journal, year]** – *TBD*
+* Ishikawa, H. and Mizutani, Y. A Structure-guided, Indel-aware Framework for Ancestral Reconstruction of Full-length Seven-transmembrane Proteins. *submitted*
 
 ---
