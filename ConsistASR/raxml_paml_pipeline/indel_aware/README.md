@@ -97,7 +97,7 @@ The main wrapper expects:
 Basic example:
 
 ```bash
-bash run_indel_aware_paml.sh \
+bash /path/to/run_indel_aware_paml.sh \
   --msa   HeR_SzR_228_FFT_NS_1.fasta \
   --tree  HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre \
   --rst   HeR_SzR_228_FFT_NS_1.rst \

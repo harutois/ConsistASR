@@ -34,9 +34,9 @@ Runtime:
 
 - Bash (tested with `bash`)
 - [`seqkit`](https://bioinf.shenwei.me/seqkit/)
-- [`cd-hit`](http://weizhong-lab.ucsd.edu/cd-hit/)
+- [`cd-hit`](https://www.bioinformatics.org/cd-hit/)
 - [`mafft`](https://mafft.cbrc.jp/alignment/software/)
-- [`FastTree`](http://www.microbesonline.org/fasttree/)
+- [`FastTree`](https://morgannprice.github.io/fasttree/)
 - Python 3
 - [`Treemmer`](https://github.com/fmenardo/Treemmer) (e.g. `Treemmer_v0.3.py`)
 

@@ -112,7 +112,7 @@ Node112/
   ASR_QpfamR7_PSI_TM_Coffee.state
   ```
 
-* `--aln <INDEL_WITHGAP_FASTA>`
+* `--withgap <INDEL_WITHGAP_FASTA>`
   Indel-aware alignment (FASTA) that includes the node of interest as a header:
 
   ```bash
@@ -149,15 +149,15 @@ cd Node112/
 bash /path/to/run_confmap_iqtree.sh \
   --state /path/to/ASR_QpfamR7_PSI_TM_Coffee.state \
   --node  Node112 \
-  --aln   /path/to/ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta \
+  --withgap   /path/to/ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta \
   --outdir confmap
 ```
 
 Arguments:
 
 * `--state` : path to IQ-TREE `.state` file
-* `--node`  : node ID (must match the FASTA header in `--aln`)
-* `--aln`   : aligned FASTA (`with gaps`) containing that node sequence
+* `--node`  : node ID (must match the FASTA header in `--withgap`)
+* `--withgap`   : aligned FASTA (`with gaps`) containing that node sequence
 * `--outdir`: output directory for confmap results (default: `confmap`)
 
 Help:

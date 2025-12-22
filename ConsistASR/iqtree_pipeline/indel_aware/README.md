@@ -87,7 +87,7 @@ The main wrapper expects IQ-TREE ASR outputs plus the original MSA:
 Basic example:
 
 ```bash
-bash run_indel_aware_iqtree.sh \
+bash /path/to/run_indel_aware_iqtree.sh \
   --msa HeR_SzR_228_PSI_TM_Coffee.fasta \
   --tree ASR_QpfamR7_PSI_TM_Coffee.treefile \
   --state ASR_QpfamR7_PSI_TM_Coffee.state \

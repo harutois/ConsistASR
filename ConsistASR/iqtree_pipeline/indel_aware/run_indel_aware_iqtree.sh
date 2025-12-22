@@ -24,6 +24,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 MSA_FASTA=""
 TREEFILE=""
 STATE_FILE=""
@@ -158,7 +160,7 @@ done
 echo "[INFO] =================================================="
 echo "[INFO] 1) Converting MSA to binary (0/1): ${BIN_PHY}"
 echo "[INFO] =================================================="
-python msa_to_binary.py "$MSA_FASTA" "$BIN_PHY"
+python "${SCRIPT_DIR}/msa_to_binary.py" "$MSA_FASTA" "$BIN_PHY"
 
 echo "[INFO] =================================================="
 echo "[INFO] 2) RAxML-NG --evaluate (BIN+G, outgroup=${OUTGROUPS})"
@@ -202,7 +204,7 @@ fi
 echo "[INFO] =================================================="
 echo "[INFO] 4) Mapping node IDs (RAxML → IQ-TREE)"
 echo "[INFO] =================================================="
-python map_raxml_to_iqtree_nodes.py \
+python "${SCRIPT_DIR}/map_raxml_to_iqtree_nodes.py" \
   --iqtree "$TREEFILE" \
   --raxml "$RAxML_NODE_TREE" \
   --ancestral "$RAxML_ANCESTRAL" \
@@ -212,7 +214,7 @@ python map_raxml_to_iqtree_nodes.py \
 echo "[INFO] =================================================="
 echo "[INFO] 5) Generating gap-aware ancestral FASTA"
 echo "[INFO] =================================================="
-python state_and_indel_to_fasta.py \
+python "${SCRIPT_DIR}/state_and_indel_to_fasta.py" \
   --state "$STATE_FILE" \
   --indel "$INDEL_MAP_OUT" \
   --out_withgap "$OUT_WITHGAP" \

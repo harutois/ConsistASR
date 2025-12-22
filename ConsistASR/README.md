@@ -214,6 +214,7 @@ See `iqtree_pipeline/indel_aware/README.md` and the toy example in `iqtree_pipel
     * CA-only statistics for each metric
 
 These outputs can be visualized in PyMOL or ChimeraX.
+See `iqtree_pipeline/confmap/README.md`
 
 ---
 

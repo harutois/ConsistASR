@@ -38,6 +38,7 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # -------------------------
 # Argument parsing
 # -------------------------
@@ -259,7 +260,7 @@ echo "[INFO] Node alignment fasta: ${NODE_ALN_FASTA}"
 # ------------------------------------------------------------
 echo "[INFO] --- Step 5: Embedding PP into B-factors via map_confidence_to_bfactor.py ---"
 
-python map_confidence_to_bfactor.py \
+python "${SCRIPT_DIR}/map_confidence_to_bfactor.py" \
   --cif "${BEST_CIF}" \
   --asr_fasta "${NODE_ALN_FASTA}" \
   --pp_file "${TMP_PP_FILE}" \

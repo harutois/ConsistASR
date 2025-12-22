@@ -35,6 +35,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 MSA_FASTA=""
 TREEFILE=""
 RST_FILE=""
@@ -170,7 +172,7 @@ done
 echo "[INFO] =================================================="
 echo "[INFO] 1) Converting MSA to binary (0/1): ${BIN_PHY}"
 echo "[INFO] =================================================="
-python msa_to_binary.py "$MSA_FASTA" "$BIN_PHY"
+python "${SCRIPT_DIR}/msa_to_binary.py" "$MSA_FASTA" "$BIN_PHY"
 
 echo "[INFO] =================================================="
 echo "[INFO] 2) RAxML-NG --evaluate (BIN+G, outgroup=${OUTGROUPS})"
@@ -214,7 +216,7 @@ fi
 echo "[INFO] =================================================="
 echo "[INFO] 4) Mapping node IDs (RAxML → PAML)"
 echo "[INFO] =================================================="
-python map_raxml_to_paml_nodes_from_rst.py \
+python "${SCRIPT_DIR}/map_raxml_to_paml_nodes_from_rst.py" \
   --rst "$RST_FILE" \
   --raxml "$RAxML_NODE_TREE" \
   --ancestral "$RAxML_ANCESTRAL" \
@@ -225,7 +227,7 @@ python map_raxml_to_paml_nodes_from_rst.py \
 echo "[INFO] =================================================="
 echo "[INFO] 5) Generating gap-aware ancestral FASTA (PAML ASR + indel)"
 echo "[INFO] =================================================="
-python paml_state_and_indel_to_fasta.py \
+python "${SCRIPT_DIR}/paml_state_and_indel_to_fasta.py" \
   --rst "$RST_FILE" \
   --indel "$INDEL_PAML_NAMED" \
   --out_withgap "$OUT_WITHGAP" \
