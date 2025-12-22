@@ -342,13 +342,22 @@ This produces, among others:
 
 **Run the indel-aware ASR wrapper** to obtain gap-aware ancestors:
 
-Copy the scripts in the `iqtree_pipeline/indel_aware` folder to the current working directory.
+```bash 
+bash /path/to/run_indel_aware_iqtree.sh \
+  --msa    toy_7tm_rhodopsin.fasta \
+  --tree   ASR_toy_7tm_rhodopsin.treefile \
+  --state  ASR_toy_7tm_rhodopsin.state \
+  --prefix ASR_toy_7tm_rhodopsin \
+  --outgroup "OG_WP_285271495,OG_WP_136361479"
+```
+
+Alternatively, copy the scripts in the `iqtree_pipeline/indel_aware` folder to the current working directory.
 
 ```bash 
 bash run_indel_aware_iqtree.sh \
-  --msa   toy_7tm_rhodopsin.fasta \
-  --tree  ASR_toy_7tm_rhodopsin.treefile \
-  --state ASR_toy_7tm_rhodopsin.state \
+  --msa    toy_7tm_rhodopsin.fasta \
+  --tree   ASR_toy_7tm_rhodopsin.treefile \
+  --state  ASR_toy_7tm_rhodopsin.state \
   --prefix ASR_toy_7tm_rhodopsin \
   --outgroup "OG_WP_285271495,OG_WP_136361479"
 ```
@@ -364,13 +373,20 @@ This produces, for all internal nodes:
 ```bash
 cd confmap/Node10   # directory containing the AlphaFold CIF/JSON
 ```
-Copy the scripts in the `iqtree_pipeline/confmap` folder, `.state` and `withgap.fasta` files to the current working directory.
+```bash
+bash /path/to/run_confmap_iqtree.sh \
+  --state  /path/to/ASR_toy_7tm_rhodopsin.state \
+  --node   Node10 \
+  --withgap  /path/to/ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
+  --outdir confmap
+```
+Alternatively, copy the scripts in the `iqtree_pipeline/confmap` folder, `.state` and `withgap.fasta` files to the current working directory.
 
 ```bash
 bash run_confmap_iqtree.sh \
-  --state ASR_toy_7tm_rhodopsin.state \
-  --node  Node10 \
-  --withgap   ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
+  --state  ASR_toy_7tm_rhodopsin.state \
+  --node   Node10 \
+  --withgap  ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
   --outdir confmap
 ```
 This creates in `confmap/`:
@@ -424,7 +440,16 @@ This produces, among others:
 
 **Run the indel-aware ASR wrapper** to obtain gap-aware ancestors:
 
-Copy the scripts in the `raxml_paml_pipeline/indel_aware` folder to the current working directory.
+```bash 
+bash /path/to/run_indel_aware_paml.sh \
+  --msa   toy_7tm_rhodopsin.fasta \
+  --tree  toy_7tm_rhodopsin.raxml.bestTree \
+  --rst   rst \
+  --prefix ASR_toy_7tm_rhodopsin \
+  --outgroup "OG_WP_285271495,OG_WP_136361479"
+```
+
+Alternatively, copy the scripts in the `raxml_paml_pipeline/indel_aware` folder to the current working directory.
 
 ```bash 
 bash run_indel_aware_paml.sh \
@@ -446,24 +471,22 @@ This produces, for all internal nodes:
 ```bash
 cd confmap/Node28   # directory containing the AlphaFold CIF/JSON
 ```
-Copy the scripts in the `raxml_paml_pipeline/confmap` folder, `rst` and `withgap.fasta` files to the current working directory.
+```bash
+bash /path/to/run_confmap_paml.sh \
+  --rst   /path/to/rst \
+  --node  28 \
+  --withgap  /path/to/ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
+  --outdir confmap
+```
+Alternatively, copy the scripts in the `raxml_paml_pipeline/confmap` folder, `rst` and `withgap.fasta` files to the current working directory.
 
 ```bash
 bash run_confmap_paml.sh \
   --rst   rst \
   --node  28 \
-  --withgap   ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
+  --withgap  ASR_toy_7tm_rhodopsin_indel_withgap.fasta \
   --outdir confmap
 ```
 This produces the same set of PDBs and log files as the IQ-TREE pipeline, now based on PAML ASR.
 
 ---
-
-## Citation
-
-If you use ConsistASR in your work, please cite:
-
-* **[Manuscript title, authors, journal, year]** – *TBD*
-
----
-
