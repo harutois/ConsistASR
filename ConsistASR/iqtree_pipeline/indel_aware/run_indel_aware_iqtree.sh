@@ -240,7 +240,7 @@ echo "[INFO] All done."
 echo "[INFO]  - Indel-aware FASTA (with gaps):    $OUT_WITHGAP"
 echo "[INFO]  - Indel-aware FASTA (gap-stripped): $OUT_NOGAP"
 if [ -n "${MAP_TABLE:-}" ]; then
-  echo "[INFO]  - Node mapping table:     　　　　$MAP_TABLE"
+  echo "[INFO]  - Node mapping table:     　　　　  $MAP_TABLE"
 fi
-echo "[INFO]  - Intermediate files moved to: 　　${WORK_SUBDIR}"
+echo "[INFO]  - Intermediate files moved to: 　　 ${WORK_SUBDIR}"
 echo "[INFO] =================================================="
