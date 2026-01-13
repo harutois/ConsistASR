@@ -1,5 +1,7 @@
 # ConsistASR
 
+[![DOI](https://zenodo.org/badge/1118705366.svg)](https://zenodo.org/badge/latestdoi/1118705366)
+
 ConsistASR is a collection of small, modular scripts for **indel-aware ancestral sequence reconstruction (ASR)** and **confidence mapping** on AlphaFold models.
 
 The main focus is on 7-transmembrane (7TM) microbial rhodopsins, but the workflow is in principle applicable to other protein families.
