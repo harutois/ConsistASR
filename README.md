@@ -47,6 +47,6 @@ For detailed installation, pipeline descriptions, and examples, please see the m
 
 If you use ConsistASR in your work, please cite:
 
-* Ishikawa, H. and Mizutani, Y. A Structure-guided, Indel-aware Framework for Ancestral Reconstruction of Full-length Seven-transmembrane Proteins. *submitted*
+* Ishikawa, H. and Mizutani, Y. A Structure-guided, Indel-aware Framework for Ancestral Reconstruction of Full-length Seven-transmembrane Proteins. *submitted* https://doi.org/10.64898/2025.12.28.696783
 
 ---
