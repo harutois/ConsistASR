@@ -1,6 +1,6 @@
 # ConsistASR
 
-[![DOI](https://zenodo.org/badge/1118705366.svg)](https://zenodo.org/badge/latestdoi/1118705366)
+[![DOI](https://zenodo.org/badge/1118705366.svg)](https://doi.org/10.5281/zenodo.18080327)
 
 ConsistASR is a collection of small, modular scripts for **indel-aware ancestral sequence reconstruction (ASR)** and **confidence mapping** on AlphaFold models.
 
