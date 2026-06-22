@@ -3,12 +3,12 @@
 This directory provides a small pipeline that combines:
 
 - **RAxML** amino-acid phylogeny (used as the fixed tree for PAML ASR)
-- **PAML** amino-acid ancestral sequence reconstruction (`.rst`)
+- **PAML** amino-acid ancestral sequence reconstruction (`rst`)
 - **RAxML(-NG + RAxML-HPC)** binary (0/1) indel reconstruction
 
 to generate both **raw PAML ASR sequences** and **indel-aware ancestral amino-acid sequences** in FASTA format:
 
-- raw PAML ASR sequences parsed directly from the `.rst` file
+- raw PAML ASR sequences parsed directly from the `rst` file
 - indel-aware alignment-like sequences **with gaps** (for inspection)
 - indel-aware **gap-stripped** sequences (e.g. for AlphaFold input)
 
@@ -27,11 +27,11 @@ Scripts in this directory:
   Converts an amino-acid MSA in FASTA format to a binary (0/1) MSA in PHYLIP format for RAxML.
 
 - `map_raxml_to_paml_nodes_from_rst.py`  
-  Extracts the PAML tree with node labels from a `.rst` file, applies a simple “tail-normalization” to leaf names, and maps RAxML internal node labels to PAML node IDs by comparing **leaf sets** (clades).  
+  Extracts the PAML tree with node labels from a `rst` file, applies a simple “tail-normalization” to leaf names, and maps RAxML internal node labels to PAML node IDs by comparing **leaf sets** (clades).  
   It then rewrites the node labels in `RAxML_marginalAncestralStates.*` to the corresponding PAML node IDs.
 
 - `paml_state_and_indel_to_fasta.py`  
-  Parses PAML `.rst` AA states for **all nodes**, writes raw PAML ASR FASTA files, then merges the AA states with RAxML indel (0/1) patterns already renamed to PAML node IDs.
+  Parses PAML `rst` AA states for **all nodes**, writes raw PAML ASR FASTA files, then merges the AA states with RAxML indel (0/1) patterns already renamed to PAML node IDs.
 
 ---
 
@@ -47,7 +47,7 @@ Scripts in this directory:
   - Used with `-f A` and `-m BINGAMMA` to perform binary (indel) ASR.
 
 - **PAML**  
-  - `codeml` (or similar) is assumed to have been run beforehand to produce a `.rst` file containing:
+  - `codeml` (or similar) is assumed to have been run beforehand to produce a `rst` file containing:
     - the tree with node labels (“tree with node labels for Rod Page's TreeView”),
     - and per-node amino-acid states.
 
@@ -55,7 +55,7 @@ Scripts in this directory:
   - `bash`, `mkdir`, `mv`, etc.
 
 > **Note:** PAML itself is **not** called by this pipeline.  
-> It assumes that PAML ASR has already been performed and that the `.rst` file and the RAxML tree used for that ASR are available.
+> It assumes that PAML ASR has already been performed and that the `rst` file and the RAxML tree used for that ASR are available.
 
 ---
 
@@ -75,7 +75,7 @@ The main wrapper expects:
    - Example:  
      `HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre`
 
-3. **PAML ASR result file (`.rst`)**
+3. **PAML ASR result file (`rst`)**
 
    - Contains:
      - “tree with node labels for Rod Page's TreeView”
@@ -115,7 +115,7 @@ bash /path/to/run_indel_aware_paml.sh \
   RAxML tree used for PAML ASR (Newick).
 
 * `--rst` (required)
-  PAML `.rst` file containing the tree with node labels and ancestral states.
+  PAML `rst` file containing the tree with node labels and ancestral states.
 
 * `--prefix` (required)
   Prefix for all newly generated files.
@@ -179,7 +179,7 @@ bash /path/to/run_indel_aware_paml.sh \
 
    * Procedure:
 
-     1. Extract the PAML tree with node labels from the `.rst` file.
+     1. Extract the PAML tree with node labels from the `rst` file.
      2. Apply *tail-normalization* on PAML leaf names:
 
         * Example:
@@ -207,11 +207,11 @@ bash /path/to/run_indel_aware_paml.sh \
        paml_node   raxml_node   n_tips   status
        ```
 
-5. **Write raw PAML ASR FASTA and merge `.rst` AA states with RAxML indel data**
+5. **Write raw PAML ASR FASTA and merge `rst` AA states with RAxML indel data**
 
    * Script: `paml_state_and_indel_to_fasta.py`
 
-   * Raw PAML ASR outputs are written directly from the `.rst` file before indel correction:
+   * Raw PAML ASR outputs are written directly from the `rst` file before indel correction:
 
      * `<prefix>_raw_asr_withgap.fasta`  
        Raw PAML ancestral sequences at alignment length.
@@ -235,7 +235,7 @@ bash /path/to/run_indel_aware_paml.sh \
    * Node-labelled tree output:
 
      * `<prefix>_paml_nodes.tree`  
-       PAML node-labelled tree extracted from the `.rst` file.
+       PAML node-labelled tree extracted from the `rst` file.
 
 6. **Move intermediate files**
 
@@ -308,8 +308,8 @@ Typical informational output:
 [DONE] ancestralStates written to: ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
 [INFO] Lines processed: 227, renamed: 2
 ...
-[INFO] Reading PAML .rst: HeR_SzR_228_FFT_NS_1.rst
-[INFO] Loaded 227 nodes from .rst
+[INFO] Reading PAML rst: HeR_SzR_228_FFT_NS_1.rst
+[INFO] Loaded 227 nodes from rst
 [INFO] Reading indel file: ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
 [INFO] Loaded 227 indel profiles
 [INFO] Merging AA states and indel patterns...
@@ -322,10 +322,10 @@ Notes:
 
   * Most RAxML node numbers already match PAML’s node IDs.
   * Often only the root (or a few nodes) require renaming.
-* If some nodes are missing in either the `.rst` or the indel file, you may see warnings like:
+* If some nodes are missing in either the `rst` or the indel file, you may see warnings like:
 
-  * `nodes found in .rst but missing from indel file (skipped)`
-  * `nodes found in indel file but not in .rst (ignored)`
+  * `nodes found in rst but missing from indel file (skipped)`
+  * `nodes found in indel file but not in rst (ignored)`
 
 To inspect the mapping, open `<prefix>_node_map.tsv` and check:
 
@@ -367,12 +367,12 @@ To inspect the mapping, open `<prefix>_node_map.tsv` and check:
 
 * This pipeline is designed for **indel-aware ASR** using:
 
-  * PAML amino-acid states from `.rst`
+  * PAML amino-acid states from `rst`
   * RAxML binary indel states
 
 * It assumes that:
 
-  * The PAML `.rst` tree and the RAxML trees are based on **the same taxon set**.
+  * The PAML `rst` tree and the RAxML trees are based on **the same taxon set**.
   * Topologies are mostly consistent (except possibly near outgroup/polytomies).
 
 It has been tested primarily on **7TM microbial rhodopsins**, but the approach is general and should be applicable to other protein families as long as these assumptions hold.

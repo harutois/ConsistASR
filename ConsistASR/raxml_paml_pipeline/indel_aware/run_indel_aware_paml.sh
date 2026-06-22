@@ -4,7 +4,7 @@
 #
 # Indel-aware ASR pipeline for:
 #   - RAxML tree used for PAML ASR (.nwk)
-#   - PAML ASR output (.rst)
+#   - PAML ASR output (rst)
 #
 # This script:
 #   1) Converts an amino-acid MSA to a binary (0/1) gap matrix.
@@ -12,9 +12,9 @@
 #      and writes a bestTree on the binary alignment.
 #   3) Runs RAxML(-HPC) ancestral reconstruction on the binary
 #      alignment (indel ASR).
-#   4) Maps RAxML node IDs to PAML node IDs using the .rst tree.
-#   5) Writes raw PAML ASR FASTA from the .rst file and merges
-#      PAML .rst AA states and indel states to produce gap-aware
+#   4) Maps RAxML node IDs to PAML node IDs using the rst tree.
+#   5) Writes raw PAML ASR FASTA from the rst file and merges
+#      PAML rst AA states and indel states to produce gap-aware
 #      ancestral FASTA.
 #
 # Example:
@@ -50,7 +50,7 @@ Usage: $0 --msa MSA_FASTA --tree TREEFILE --rst RST_FILE --prefix OUT_PREFIX --o
 Required arguments:
   --msa       Amino-acid MSA in FASTA format (same sequences as used for RAxML/PAML ASR)
   --tree      RAxML topology file (.nwk) used for the PAML ASR run
-  --rst       PAML ASR output file (.rst)
+  --rst       PAML ASR output file (rst)
   --prefix    Output prefix (used for all intermediate and final files)
   --outgroup  Comma-separated list of outgroup taxa (passed to RAxML-NG --outgroup)
 

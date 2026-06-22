@@ -3,7 +3,7 @@
 # paml_state_and_indel_to_fasta.py
 #
 # Merge:
-#   - a PAML .rst file (ASR results), and
+#   - a PAML rst file (ASR results), and
 #   - a RAxML indel 0/1 file (node labels already mapped to
 #     the PAML node IDs)
 # to produce:
@@ -14,7 +14,7 @@
 # for all ancestral nodes.
 #
 # The interface and behavior are analogous to the IQ-TREE version
-# (state_and_indel_to_fasta.py), while the .rst parsing logic is
+# (state_and_indel_to_fasta.py), while the rst parsing logic is
 # generalized from extract_multi_node_indel.py.
 # ============================================================
 
@@ -24,12 +24,12 @@ from collections import defaultdict
 
 
 # ---------------------------
-# Extract AA sequences for all nodes from PAML .rst
+# Extract AA sequences for all nodes from PAML rst
 # ---------------------------
 
 def parse_all_nodes_from_rst(rst_path):
     """
-    Parse all "node # <id>" blocks from a PAML .rst file and return:
+    Parse all "node # <id>" blocks from a PAML rst file and return:
 
         { '229': 'AA....', '230': 'AA....', ... }
 
@@ -85,7 +85,7 @@ def parse_all_nodes_from_rst(rst_path):
     # Optional: length consistency check
     lengths = {len(s) for s in seq_dict.values()}
     if len(lengths) != 1:
-        print(f"[WARN] PAML .rst sequences have multiple lengths: {lengths}")
+        print(f"[WARN] PAML rst sequences have multiple lengths: {lengths}")
 
     return seq_dict
 
@@ -136,7 +136,7 @@ def parse_indel_file(indel_file):
 
 def merge_state_and_indel(state_dict, indel_dict):
     """
-    Merge AA sequences from PAML .rst with RAxML indel (0/1) patterns.
+    Merge AA sequences from PAML rst with RAxML indel (0/1) patterns.
 
     Rules:
       bit = '0' → '-' (deletion) at that position
@@ -182,7 +182,7 @@ def merge_state_and_indel(state_dict, indel_dict):
 
     if missing_indel:
         print(
-            f"[WARN] {len(missing_indel)} nodes found in .rst "
+            f"[WARN] {len(missing_indel)} nodes found in rst "
             f"but missing from indel file (skipped). "
             f"Examples: {missing_indel[:5]}"
         )
@@ -191,7 +191,7 @@ def merge_state_and_indel(state_dict, indel_dict):
     if extra_indel_nodes:
         print(
             f"[WARN] {len(extra_indel_nodes)} nodes found in indel file "
-            f"but not in .rst (ignored). "
+            f"but not in rst (ignored). "
             f"Examples: {sorted(list(extra_indel_nodes))[:5]}"
         )
 
@@ -224,12 +224,12 @@ def write_fasta(seqs, outpath, remove_gaps=False):
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "Combine PAML .rst ASR output and RAxML-based indel (0/1) results "
+            "Combine PAML rst ASR output and RAxML-based indel (0/1) results "
             "into gap-aware ASR FASTA (with and without gaps) for all nodes."
         )
     )
     parser.add_argument("--rst", required=True,
-                        help="PAML .rst file (ASR result)")
+                        help="PAML rst file (ASR result)")
     parser.add_argument("--indel", required=True,
                         help="RAxML indel file (0/1 patterns, node labels already mapped to PAML node IDs)")
     parser.add_argument("--out_raw_withgap", default=None,
@@ -242,9 +242,9 @@ def main():
                         help="Output FASTA (gap-stripped, e.g., for AlphaFold input)")
     args = parser.parse_args()
 
-    print(f"[INFO] Reading PAML .rst: {args.rst}")
+    print(f"[INFO] Reading PAML rst: {args.rst}")
     state_dict = parse_all_nodes_from_rst(args.rst)
-    print(f"[INFO] Loaded {len(state_dict)} nodes from .rst")
+    print(f"[INFO] Loaded {len(state_dict)} nodes from rst")
 
     print(f"[INFO] Reading indel file: {args.indel}")
     indel_dict = parse_indel_file(args.indel)

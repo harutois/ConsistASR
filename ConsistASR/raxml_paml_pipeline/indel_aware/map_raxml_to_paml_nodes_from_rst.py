@@ -3,7 +3,7 @@
 # map_raxml_to_paml_nodes_from_rst.py  (tail-normalization version)
 #
 # This script matches:
-#   - the tree with node labels embedded in a PAML .rst file, and
+#   - the tree with node labels embedded in a PAML rst file, and
 #   - a RAxML_nodeLabelledRootedTree
 # by comparing leaf sets, and then rewrites the node labels in
 # RAxML_marginalAncestralStates to the corresponding PAML node IDs.
@@ -148,11 +148,11 @@ def transform_leaf_names_tail(root):
         if m:
             nd.name = m.group(1)
 
-# ---------- Extract PAML tree from .rst ----------
+# ---------- Extract PAML tree from rst ----------
 
 def extract_paml_tree_from_rst(rst_path):
     """
-    Extract the Newick tree (with node labels) from a PAML .rst file.
+    Extract the Newick tree (with node labels) from a PAML rst file.
 
     We look for the line containing "tree with node labels" (case-insensitive),
     then concatenate subsequent lines until we have a semicolon ';'.
@@ -195,13 +195,13 @@ def main():
     ap = argparse.ArgumentParser(
         description=(
             "Match a RAxML nodeLabelledRootedTree and the PAML tree "
-            "embedded in a .rst file by leaf sets (after tail-normalization), "
+            "embedded in a rst file by leaf sets (after tail-normalization), "
             "rewrite RAxML_marginalAncestralStates node labels to PAML "
             "node labels, and optionally output a TSV mapping table."
         )
     )
     ap.add_argument("--rst", required=True,
-                    help="PAML .rst file containing 'tree with node labels'")
+                    help="PAML rst file containing 'tree with node labels'")
     ap.add_argument("--raxml", required=True,
                     help="RAxML_nodeLabelledRootedTree.* (internal nodes with numeric labels)")
     ap.add_argument("--ancestral", required=True,
@@ -214,7 +214,7 @@ def main():
         "--paml_tree_out",
         default=None,
         help="Optional output file for the PAML Newick tree with node labels "
-             "extracted directly from the .rst file (single-line Newick)."
+             "extracted directly from the rst file (single-line Newick)."
     )
     args = ap.parse_args()
 
