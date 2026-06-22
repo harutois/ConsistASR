@@ -5,10 +5,11 @@ This directory provides a small pipeline that combines:
 - **IQ-TREE** amino-acid ancestral state reconstruction (`.state`, `.treefile`)
 - **RAxML(-NG + RAxML-HPC)** binary (0/1) indel reconstruction
 
-to generate **indel-aware ancestral amino-acid sequences** in FASTA format:
+to generate both **raw IQ-TREE ASR sequences** and **indel-aware ancestral amino-acid sequences** in FASTA format:
 
-- an alignment-like version **with gaps** (for inspection)
-- a **gap-stripped** version (e.g. for AlphaFold input)
+- raw IQ-TREE ASR sequences before indel correction
+- indel-aware alignment-like sequences **with gaps** (for inspection)
+- indel-aware **gap-stripped** sequences (e.g. for AlphaFold input)
 
 This is the IQ-TREE-based part of the *ConsistASR* toolkit.
 
@@ -28,7 +29,7 @@ Scripts in this directory:
   Maps RAxML internal node labels (numeric) to IQ-TREE `NodeXX` labels by comparing **leaf sets** (clades).
 
 - `state_and_indel_to_fasta.py`  
-  Merges IQ-TREE `.state` residues and RAxML indel (0/1) patterns into indel-aware ancestral sequences and writes FASTA files.
+  Writes raw IQ-TREE ASR FASTA files from the `.state` file, then merges IQ-TREE `.state` residues and RAxML indel (0/1) patterns into indel-aware ancestral sequences.
 
 ---
 
@@ -112,10 +113,6 @@ bash /path/to/run_indel_aware_iqtree.sh \
 * `--outgroup` (required)
   Comma-separated list of outgroup taxa; must match sequence names in the MSA.
 
-* `--workdir` (optional)
-  Subdirectory name to store intermediate files.
-  Default: `<prefix>_indel_work`
-
 ---
 
 ## What the pipeline does
@@ -182,25 +179,42 @@ bash /path/to/run_indel_aware_iqtree.sh \
        iqtree_node   raxml_node   n_tips   status
        ```
 
-5. **Merge IQ-TREE `.state` and RAxML indel data**
+5. **Write raw ASR FASTA and merge IQ-TREE `.state` with RAxML indel data**
 
    * Script: `state_and_indel_to_fasta.py`
-   * Rule for each position:
+
+   * Raw IQ-TREE ASR outputs are written directly from the `.state` file before indel correction:
+
+     * `<prefix>_raw_asr_withgap.fasta`
+       Raw IQ-TREE ancestral sequences at alignment length.
+     * `<prefix>_raw_asr_nogap.fasta`
+       Raw IQ-TREE ancestral sequences with all `'-'` removed.
+
+   * Indel-aware correction rule for each position:
 
      * `bit = 0` → `'-'` (deletion)
      * `bit = 1` → keep amino-acid state (if AA is already `'-'`, keep `'-'`)
-   * Outputs (in the **current directory**):
+
+   * Indel-aware outputs:
 
      * `<prefix>_indel_withgap.fasta`
-       (alignment-style ancestral sequences, gaps preserved)
+       Alignment-style ancestral sequences after indel correction.
      * `<prefix>_indel_nogap.fasta`
-       (all `'-'` removed, suitable as AlphaFold input)
+       Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
 
 6. **Move intermediate files**
 
-   * All intermediate files are moved to `<prefix>_indel_work/`
-   * Final outputs remain in the top-level directory:
+   * Intermediate files are moved to `<prefix>_indel_work/`, including:
 
+     * `<prefix>_binary.phy`
+     * `<prefix>_indel_eval.raxml.*`
+     * `RAxML_*.<prefix>_binary`
+     * `<prefix>_indel_ASR.iqtree_named.txt`
+
+   * Final user-facing outputs remain in the top-level directory:
+
+     * `<prefix>_raw_asr_withgap.fasta`
+     * `<prefix>_raw_asr_nogap.fasta`
      * `<prefix>_indel_withgap.fasta`
      * `<prefix>_indel_nogap.fasta`
      * `<prefix>_node_map.tsv`
@@ -213,10 +227,17 @@ After successful execution, you should see:
 
 * **Main outputs**
 
-  * `<prefix>_indel_withgap.fasta`
+  * `<prefix>_raw_asr_withgap.fasta`  
+    Raw IQ-TREE ASR sequences before indel correction, at alignment length.
+
+  * `<prefix>_raw_asr_nogap.fasta`  
+    Raw IQ-TREE ASR sequences with all gaps removed.
+
+  * `<prefix>_indel_withgap.fasta`  
     Indel-aware ancestral sequences, alignment length identical to the MSA.
-  * `<prefix>_indel_nogap.fasta`
-    Gap-stripped ancestral sequences (one sequence per node), same `NodeXX` names.
+
+  * `<prefix>_indel_nogap.fasta`  
+    Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
 
 * **Mapping table**
 
@@ -228,11 +249,17 @@ After successful execution, you should see:
 
 * **Intermediate files**
 
-  * `<prefix>_indel_work/`
-    Contains:
+  * `<prefix>_indel_work/`  
+    Contains intermediate files, including:
 
-    * `<prefix>_binary.phy`, reduced alignments, RAxML log files,
-      `RAxML_marginalAncestralStates.*`, `RAxML_nodeLabelledRootedTree.*`, etc.
+    * `<prefix>_binary.phy`
+    * `<prefix>_binary.phy.reduced`
+    * `<prefix>_indel_eval.raxml.*`
+    * `<prefix>_indel_ASR.iqtree_named.txt`
+    * `RAxML_marginalAncestralStates.<prefix>_binary`
+    * `RAxML_nodeLabelledRootedTree.<prefix>_binary`
+
+    The file `<prefix>_indel_ASR.iqtree_named.txt` contains mapped binary indel states and is kept for inspection/debugging, but it is not usually needed for downstream analysis.
 
 ---
 
@@ -244,12 +271,15 @@ A typical run might produce a directory like:
 test/
 ├── ASR_QpfamR7_PSI_TM_Coffee.state
 ├── ASR_QpfamR7_PSI_TM_Coffee.treefile
-├── ASR_QpfamR7_PSI_TM_Coffee_indel_ASR.iqtree_named.txt
+├── ASR_QpfamR7_PSI_TM_Coffee_raw_asr_withgap.fasta
+├── ASR_QpfamR7_PSI_TM_Coffee_raw_asr_nogap.fasta
 ├── ASR_QpfamR7_PSI_TM_Coffee_indel_nogap.fasta
 ├── ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta
+├── ASR_QpfamR7_PSI_TM_Coffee_node_map.tsv
 ├── ASR_QpfamR7_PSI_TM_Coffee_indel_work
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_binary.phy
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_binary.phy.reduced
+│   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_ASR.iqtree_named.txt
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestModel
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestTree
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestTreeCollapsed
@@ -261,7 +291,6 @@ test/
 │   ├── RAxML_marginalAncestralProbabilities.ASR_QpfamR7_PSI_TM_Coffee_binary
 │   ├── RAxML_marginalAncestralStates.ASR_QpfamR7_PSI_TM_Coffee_binary
 │   └── RAxML_nodeLabelledRootedTree.ASR_QpfamR7_PSI_TM_Coffee_binary
-├── ASR_QpfamR7_PSI_TM_Coffee_node_map.tsv
 ├── HeR_SzR_228_PSI_TM_Coffee.fasta
 └── (pipeline scripts)
 ```

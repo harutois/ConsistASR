@@ -1,0 +1,4 @@
+new_id	old_header	db	accession	entry_name	protein_name	organism	ox	gene	pe	sv	fallback_used	duplicate_resolved
+A0A285P2K2_NATPI	tr|A0A285P2K2|A0A285P2K2_NATPI Nitric oxide reductase, NorZ apoprotein OS=Natronoarchaeum philippinense OX=558529 GN=SAMN06269185_2558 PE=4 SV=1	tr	A0A285P2K2	A0A285P2K2_NATPI	Nitric oxide reductase, NorZ apoprotein	Natronoarchaeum philippinense	558529	SAMN06269185_2558	4	1	no	no
+A0A871BJ59_HALGI	tr|A0A871BJ59|A0A871BJ59_HALGI Homolog to nitric oxide reductase subunit B OS=Haloferax gibbonsii OX=35746 GN=HfgLR_13555 PE=4 SV=1	tr	A0A871BJ59	A0A871BJ59_HALGI	Homolog to nitric oxide reductase subunit B	Haloferax gibbonsii	35746	HfgLR_13555	4	1	no	no
+TEST_PROT	sp|P12345|TEST_PROT Example protein OS=Test organism OX=12345 GN=testA PE=1 SV=2	sp	P12345	TEST_PROT	Example protein	Test organism	12345	testA	1	2	no	no

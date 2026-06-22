@@ -6,7 +6,9 @@ All scripts:
 
 - take a multi-FASTA file as input
 - write a new FASTA with modified IDs
-- write a tab-separated mapping file (`new_id<TAB>old_header`) so that original IDs can be recovered if needed
+- write a tab-separated mapping file so that original IDs can be recovered if needed
+  - the simple scripts write `new_id<TAB>old_header`
+  - `fasta_rename_uniprot.py` writes an extended UniProt-aware mapping table
 - ensure that new IDs are **unique** (adding `_1`, `_2`, … if necessary)
 
 Typical use case:  
@@ -116,7 +118,187 @@ If duplicates are produced, `_1`, `_2`, … are appended with warnings.
 
 ---
 
-## 4. Recommended usage
+## 4. `fasta_rename_uniprot.py`
+
+Rename UniProt-style FASTA headers to short, tool-friendly IDs and write an extended mapping table.
+
+This script is intended for FASTA files downloaded from UniProtKB, where headers typically look like:
+
+```text
+>tr|A0A285P2K2|A0A285P2K2_NATPI Nitric oxide reductase, NorZ apoprotein OS=Natronoarchaeum philippinense OX=558529 GN=SAMN06269185_2558 PE=4 SV=1
+>tr|A0A871BJ59|A0A871BJ59_HALGI Homolog to nitric oxide reductase subunit B OS=Haloferax gibbonsii OX=35746 GN=HfgLR_13555 PE=4 SV=1
+>tr|A0ABD5PKQ0|A0ABD5PKQ0_9EURY Nitric-oxide reductase large subunit OS=Halosolutus amylolyticus OX=2932267 GN=ACFO5R_03125 PE=4 SV=1
+>tr|B9LQ42|B9LQ42_HALLT Cytochrome b subunit of nitric oxide reductase OS=Halorubrum lacusprofundi (strain ATCC 49239 / DSM 5036 / JCM 8891 / ACAM 34) OX=416348 GN=Hlac_1902 PE=4 SV=1
+```
+
+By default, the script uses the UniProt **entry name** as the new FASTA ID:
+
+```text
+tr|A0A285P2K2|A0A285P2K2_NATPI ... → A0A285P2K2_NATPI
+tr|A0A871BJ59|A0A871BJ59_HALGI ... → A0A871BJ59_HALGI
+tr|A0ABD5PKQ0|A0ABD5PKQ0_9EURY ... → A0ABD5PKQ0_9EURY
+tr|B9LQ42|B9LQ42_HALLT ...         → B9LQ42_HALLT
+```
+
+This is usually short enough for tree visualization and still informative for manual inspection.
+
+### Usage
+
+```bash
+python3 fasta_rename_uniprot.py \
+  --in  uniprot_input.fasta \
+  --out uniprot_short.fasta \
+  --map uniprot_id_map.tsv
+```
+
+Default output ID format:
+
+```text
+ENTRY_NAME
+```
+
+For example:
+
+```text
+A0A285P2K2_NATPI
+A0A871BJ59_HALGI
+A0ABD5PKQ0_9EURY
+B9LQ42_HALLT
+```
+
+### Alternative ID formats
+
+If you want to include the UniProt accession in the FASTA ID, use:
+
+```bash
+python3 fasta_rename_uniprot.py \
+  --in  uniprot_input.fasta \
+  --out uniprot_accession_entry.fasta \
+  --map uniprot_accession_entry_map.tsv \
+  --id-format accession_entry
+```
+
+This gives IDs such as:
+
+```text
+A0A285P2K2_A0A285P2K2_NATPI
+A0A871BJ59_A0A871BJ59_HALGI
+A0ABD5PKQ0_A0ABD5PKQ0_9EURY
+B9LQ42_B9LQ42_HALLT
+```
+
+Available `--id-format` options:
+
+```text
+entry              default; use UniProt entry name only
+entry_name         alias of entry
+accession          use UniProt accession only
+accession_entry    use ACCESSION_ENTRY_NAME
+db_accession_entry use sp/tr_ACCESSION_ENTRY_NAME
+```
+
+### Optional prefix for UniProt-derived subsets
+
+`fasta_rename_uniprot.py` also supports an optional `--prefix` argument.
+This option is specific to the UniProt-aware renaming script and is useful when separately collected UniProt-derived subsets may later be combined.
+
+For example, qNOR and cNOR candidate sequences can be given different prefixes:
+
+```bash
+python3 fasta_rename_uniprot.py \
+  --in  uniprot_qNOR.fasta \
+  --out qNOR_short.fasta \
+  --map qNOR_id_map.tsv \
+  --prefix qNOR_
+```
+
+Example:
+
+```text
+A0A285P2K2_NATPI → qNOR_A0A285P2K2_NATPI
+```
+
+The prefix is sanitized together with the generated ID, so the final IDs contain only letters, numbers, and underscores.
+
+
+### Mapping table
+
+Unlike the other simple FASTA ID utilities, this script writes an extended mapping table.
+
+Example columns:
+
+```text
+new_id
+old_header
+db
+accession
+entry_name
+protein_name
+organism
+ox
+gene
+pe
+sv
+fallback_used
+duplicate_resolved
+```
+
+This makes it easier to recover the original UniProt accession, organism name, gene name, and protein annotation after sequence renaming.
+
+Example:
+
+```text
+new_id	old_header	db	accession	entry_name	protein_name	organism	ox	gene	pe	sv	fallback_used	duplicate_resolved
+A0A285P2K2_NATPI	tr|A0A285P2K2|A0A285P2K2_NATPI Nitric oxide reductase, NorZ apoprotein OS=Natronoarchaeum philippinense OX=558529 GN=SAMN06269185_2558 PE=4 SV=1	tr	A0A285P2K2	A0A285P2K2_NATPI	Nitric oxide reductase, NorZ apoprotein	Natronoarchaeum philippinense	558529	SAMN06269185_2558	4	1	no	no
+```
+
+### Handling duplicate IDs
+
+If two headers generate the same new ID, the script appends `_1`, `_2`, … and prints a warning to STDERR.
+
+Example:
+
+```text
+A0A285P2K2_NATPI
+A0A285P2K2_NATPI_1
+A0A285P2K2_NATPI_2
+```
+
+The mapping table records whether duplicate resolution was used in the `duplicate_resolved` column.
+
+### Handling non-UniProt headers
+
+By default, non-UniProt headers are sanitized rather than causing the script to stop.
+
+Available fallback modes:
+
+```text
+--fallback sanitize     default; replace unsafe characters with underscores
+--fallback sequential   use id00001, id00002, ...
+--fallback strict       stop with an error if a non-UniProt header is found
+```
+
+For strict checking of UniProt-only FASTA files:
+
+```bash
+python3 fasta_rename_uniprot.py \
+  --in  uniprot_input.fasta \
+  --out uniprot_short.fasta \
+  --map uniprot_id_map.tsv \
+  --fallback strict
+```
+
+This is useful when you want to ensure that all input headers follow the expected UniProt format.
+
+Small example input and expected output files are provided in:
+
+```text
+fasta_id_tools/examples/uniprot_rename/
+```
+
+---
+
+## 5. Recommended usage
 
 Typical workflow options:
 
@@ -130,8 +312,8 @@ Typical workflow options:
     --map phylip_safe_map.tsv
   ```
 
-* **Keep short but meaningful IDs** (good compromise for this ConsistASR project)
-  Use **truncation**:
+* **Keep short but meaningful IDs for general FASTA files**
+  Use **simple truncation**:
 
   ```bash
   python3 fasta_truncate_id_simple.py \
@@ -139,6 +321,19 @@ Typical workflow options:
     --out trimmed_ids.fasta \
     --map trimmed_ids_map.tsv
   ```
+
+* **Keep UniProt entry names while preserving accession and annotation information**
+  Use **UniProt-aware renaming**:
+
+  ```bash
+  python3 fasta_rename_uniprot.py \
+    --in  uniprot_raw.fasta \
+    --out uniprot_short.fasta \
+    --map uniprot_id_map.tsv
+  ```
+
+  This is recommended for UniProtKB FASTA files used in ASR pipelines.
+  When multiple UniProt-derived subsets are renamed separately and later merged, `--prefix` can be used to label each subset, for example `qNOR_` or `cNOR_`.
 
 * **Debugging / manual inspection** with “human-readable” IDs that still avoid spaces and punctuation
   Use **underscore sanitization**:
@@ -152,16 +347,28 @@ Typical workflow options:
 
 You can also chain these scripts, for example:
 
-1. First run `fasta_sanitize_id_underscore.py` to normalize headers.
-2. Then run `fasta_rename_sequential.py` if you need very short IDs for PHYLIP, while keeping the two mapping files as documentation.
+1. First run `fasta_rename_uniprot.py` to shorten UniProt headers while keeping an extended mapping table.
+2. Then run `fasta_rename_sequential.py` if you need very short IDs for strict PHYLIP/PAML workflows.
+3. Keep both mapping files as documentation.
 
 ---
 
-## 5. Notes
+## 6. Notes
 
 * All scripts assume standard multi-FASTA format (`>header` lines followed by one or more sequence lines).
+
 * Sequences are wrapped at 60 characters per line in the output.
-* Mapping files always include a header line: `new_id<TAB>old_header`.
-* Warnings related to duplicated IDs or unusual headers are written to STDERR, so they will appear in the terminal but not in the mapping file itself.
+
+* All scripts ensure that new IDs are unique by appending `_1`, `_2`, … if necessary.
+
+* The simple scripts write mapping files with at least:
+
+  ```text
+  new_id<TAB>old_header
+  ```
+
+* `fasta_rename_uniprot.py` writes an extended mapping table containing UniProt-specific fields such as accession, entry name, organism, gene name, protein name, PE, and SV.
+
+* Warnings related to duplicated IDs, unusual headers, or fallback renaming are written to STDERR, so they will appear in the terminal but not interrupt the mapping file output unless `--fallback strict` is used.
 
 ---

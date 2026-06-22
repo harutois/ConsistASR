@@ -6,10 +6,11 @@ This directory provides a small pipeline that combines:
 - **PAML** amino-acid ancestral sequence reconstruction (`.rst`)
 - **RAxML(-NG + RAxML-HPC)** binary (0/1) indel reconstruction
 
-to generate **indel-aware ancestral amino-acid sequences** in FASTA format:
+to generate both **raw PAML ASR sequences** and **indel-aware ancestral amino-acid sequences** in FASTA format:
 
-- an alignment-like version **with gaps** (for inspection)
-- a **gap-stripped** version (e.g. for AlphaFold input)
+- raw PAML ASR sequences parsed directly from the `.rst` file
+- indel-aware alignment-like sequences **with gaps** (for inspection)
+- indel-aware **gap-stripped** sequences (e.g. for AlphaFold input)
 
 This is the RAxML+PAML-based part of the *ConsistASR* toolkit.
 
@@ -30,7 +31,7 @@ Scripts in this directory:
   It then rewrites the node labels in `RAxML_marginalAncestralStates.*` to the corresponding PAML node IDs.
 
 - `paml_state_and_indel_to_fasta.py`  
-  Parses PAML `.rst` AA states for **all nodes**, merges them with RAxML indel (0/1) patterns (already renamed to PAML node IDs), and writes indel-aware ancestral sequences to FASTA.
+  Parses PAML `.rst` AA states for **all nodes**, writes raw PAML ASR FASTA files, then merges the AA states with RAxML indel (0/1) patterns already renamed to PAML node IDs.
 
 ---
 
@@ -128,7 +129,7 @@ bash /path/to/run_indel_aware_paml.sh \
 
 ## What the pipeline does
 
-`run_indel_aware.sh` executes the following steps:
+`run_indel_aware_paml.sh` executes the following steps:
 
 1. **MSA → binary 0/1 alignment (PHYLIP)**
 
@@ -206,37 +207,52 @@ bash /path/to/run_indel_aware_paml.sh \
        paml_node   raxml_node   n_tips   status
        ```
 
-5. **Merge PAML `.rst` AA states and RAxML indel data**
+5. **Write raw PAML ASR FASTA and merge `.rst` AA states with RAxML indel data**
 
    * Script: `paml_state_and_indel_to_fasta.py`
 
-   * For each node:
+   * Raw PAML ASR outputs are written directly from the `.rst` file before indel correction:
 
-     * Parse the AA sequence from the `.rst` `"node # <id>"` blocks.
-     * Read the corresponding 0/1 indel pattern from `<prefix>_indel_ASR.paml_named.txt`.
-     * Apply the following rule per site:
+     * `<prefix>_raw_asr_withgap.fasta`  
+       Raw PAML ancestral sequences at alignment length.
 
-       * `bit = 0` → `'-'` (deletion at that column)
-       * `bit = 1` → keep the AA (if AA is already `'-'`, keep `'-'`)
+     * `<prefix>_raw_asr_nogap.fasta`  
+       Raw PAML ancestral sequences with all `'-'` characters removed.
 
-   * Outputs (in the **current directory**):
+   * Indel-aware correction rule for each position:
 
-     * `<prefix>_indel_withgap.fasta`
-       Indel-aware ancestral sequences, alignment-style (gaps preserved).
-     * `<prefix>_indel_nogap.fasta`
-       Same sequences with all `'-'` characters removed
-       (e.g. suitable as AlphaFold input).
-     * `<prefix>_paml_nodes.tree`
-       Node labeled tree from the `.rst`.
+     * `bit = 0` → `'-'` (deletion at that column)
+     * `bit = 1` → keep the AA state (if AA is already `'-'`, keep `'-'`)
+
+   * Indel-aware outputs:
+
+     * `<prefix>_indel_withgap.fasta`  
+       Alignment-style ancestral sequences after indel correction.
+
+     * `<prefix>_indel_nogap.fasta`  
+       Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
+
+   * Node-labelled tree output:
+
+     * `<prefix>_paml_nodes.tree`  
+       PAML node-labelled tree extracted from the `.rst` file.
 
 6. **Move intermediate files**
 
-   * All intermediate files are moved to `<prefix>_indel_work/`.
-   * Final outputs remain in the top-level directory:
+   * Intermediate files are moved to `<prefix>_indel_work/`, including:
 
+     * `<prefix>_binary.phy`
+     * `<prefix>_indel_eval.raxml.*`
+     * `RAxML_*.<prefix>_binary`
+     * `<prefix>_indel_ASR.paml_named.txt`
+
+   * Final user-facing outputs remain in the top-level directory:
+
+     * `<prefix>_raw_asr_withgap.fasta`
+     * `<prefix>_raw_asr_nogap.fasta`
      * `<prefix>_indel_withgap.fasta`
      * `<prefix>_indel_nogap.fasta`
-     * `<prefix>_indel_ASR.paml_named.txt`
+     * `<prefix>_paml_nodes.tree`
      * `<prefix>_node_map.tsv`
 
 ---
@@ -247,11 +263,14 @@ A typical run might produce a directory like:
 
 ```text
 test/
-├── ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
+├── ASR_LGFG4_FFT_NS_1_raw_asr_withgap.fasta
+├── ASR_LGFG4_FFT_NS_1_raw_asr_nogap.fasta
 ├── ASR_LGFG4_FFT_NS_1_indel_nogap.fasta
 ├── ASR_LGFG4_FFT_NS_1_indel_withgap.fasta
-├── ASR_LGFG4_FFT_NS_1_indel_paml_nodes.tree
+├── ASR_LGFG4_FFT_NS_1_paml_nodes.tree
+├── ASR_LGFG4_FFT_NS_1_node_map.tsv
 ├── ASR_LGFG4_FFT_NS_1_indel_work/
+│   ├── ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
 │   ├── ASR_LGFG4_FFT_NS_1_binary.phy
 │   ├── ASR_LGFG4_FFT_NS_1_binary.phy.reduced
 │   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestModel
@@ -265,7 +284,6 @@ test/
 │   ├── RAxML_marginalAncestralProbabilities.ASR_LGFG4_FFT_NS_1_binary
 │   ├── RAxML_marginalAncestralStates.ASR_LGFG4_FFT_NS_1_binary
 │   └── RAxML_nodeLabelledRootedTree.ASR_LGFG4_FFT_NS_1_binary
-├── ASR_LGFG4_FFT_NS_1_node_map.tsv
 ├── HeR_SzR_228_FFT_NS_1.fasta
 ├── HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre
 ├── HeR_SzR_228_FFT_NS_1.rst

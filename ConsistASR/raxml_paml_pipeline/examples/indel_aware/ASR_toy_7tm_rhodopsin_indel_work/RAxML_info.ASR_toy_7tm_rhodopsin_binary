@@ -60,14 +60,14 @@ raxmlHPC -f A -m BINGAMMA -t ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree -s 
 
 
 Marginal Ancestral Probabilities written to file:
-/Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/RAxML_marginalAncestralProbabilities.ASR_toy_7tm_rhodopsin_binary
+/Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/RAxML_marginalAncestralProbabilities.ASR_toy_7tm_rhodopsin_binary
 
 Ancestral Sequences based on Marginal Ancestral Probabilities written to file:
-/Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/RAxML_marginalAncestralStates.ASR_toy_7tm_rhodopsin_binary
+/Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/RAxML_marginalAncestralStates.ASR_toy_7tm_rhodopsin_binary
 
 Node-laballed ROOTED tree written to file:
-/Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/RAxML_nodeLabelledRootedTree.ASR_toy_7tm_rhodopsin_binary
+/Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/RAxML_nodeLabelledRootedTree.ASR_toy_7tm_rhodopsin_binary
 
 
-Time for marginal ancestral state computation: 0.020784
+Time for marginal ancestral state computation: 0.021671
 

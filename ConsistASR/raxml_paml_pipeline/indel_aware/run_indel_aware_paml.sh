@@ -13,9 +13,9 @@
 #   3) Runs RAxML(-HPC) ancestral reconstruction on the binary
 #      alignment (indel ASR).
 #   4) Maps RAxML node IDs to PAML node IDs using the .rst tree.
-#   5) Merges PAML .rst AA states and indel states to produce
-#      gap-aware ancestral FASTA (with-gap and gap-stripped),
-#      for all nodes.
+#   5) Writes raw PAML ASR FASTA from the .rst file and merges
+#      PAML .rst AA states and indel states to produce gap-aware
+#      ancestral FASTA.
 #
 # Example:
 #   bash run_indel_aware_paml.sh \
@@ -152,6 +152,8 @@ BIN_PHY="${PREFIX}_binary.phy"
 EVAL_PREFIX="${PREFIX}_indel_eval"
 RAxML_PREFIX="${PREFIX}_binary"
 INDEL_PAML_NAMED="${PREFIX}_indel_ASR.paml_named.txt"
+OUT_RAW_WITHGAP="${PREFIX}_raw_asr_withgap.fasta"
+OUT_RAW_NOGAP="${PREFIX}_raw_asr_nogap.fasta"
 OUT_NOGAP="${PREFIX}_indel_nogap.fasta"
 OUT_WITHGAP="${PREFIX}_indel_withgap.fasta"
 MAP_TABLE="${PREFIX}_node_map.tsv"
@@ -230,6 +232,8 @@ echo "[INFO] =================================================="
 python "${SCRIPT_DIR}/paml_state_and_indel_to_fasta.py" \
   --rst "$RST_FILE" \
   --indel "$INDEL_PAML_NAMED" \
+  --out_raw_withgap "$OUT_RAW_WITHGAP" \
+  --out_raw_nogap "$OUT_RAW_NOGAP" \
   --out_withgap "$OUT_WITHGAP" \
   --out_nogap "$OUT_NOGAP"
 
@@ -248,13 +252,17 @@ mv -f ${EVAL_PREFIX}.raxml.* "$WORK_SUBDIR"/ 2>/dev/null || true
 # RAxML-HPC outputs (info, tree, ancestral states, etc.)
 mv -f RAxML_*."$RAxML_PREFIX" "$WORK_SUBDIR"/ 2>/dev/null || true
 
+# Mapped binary indel states used for generating the final indel-aware FASTA
+mv -f "$INDEL_PAML_NAMED" "$WORK_SUBDIR"/ 2>/dev/null || true
+
 echo "[INFO] =================================================="
 echo "[INFO] All done."
-echo "[INFO]  - Indel-aware FASTA (with gaps):    $OUT_WITHGAP"
+echo "[INFO]  - Indel-aware FASTA (with gaps)   : $OUT_WITHGAP"
 echo "[INFO]  - Indel-aware FASTA (gap-stripped): $OUT_NOGAP"
-echo "[INFO]  - PAML node-labelled tree:          $PAML_TREE"
+echo "[INFO]  - raw FASTA (with gaps)           : $OUT_RAW_WITHGAP"
+echo "[INFO]  - raw FASTA (gap-stripped)        : $OUT_RAW_NOGAP"
 if [ -n "${MAP_TABLE:-}" ]; then
-  echo "[INFO]  - Node mapping table:               $MAP_TABLE"
+  echo "[INFO]  - Node mapping table              : $MAP_TABLE"
 fi
-echo "[INFO]  - Intermediate files moved to:      ${WORK_SUBDIR}"
+echo "[INFO]  - Intermediate files moved to     : ${WORK_SUBDIR}"
 echo "[INFO] =================================================="

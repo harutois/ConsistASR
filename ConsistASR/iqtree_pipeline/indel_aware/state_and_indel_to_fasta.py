@@ -14,31 +14,58 @@ import argparse
 from collections import defaultdict
 
 
+# ---------------------------
+# Extract AA sequences for all nodes from IQ-TREE .state
+# ---------------------------
+
 def parse_state_file(state_file):
     """
     Parse an IQ-TREE .state file and return sequences per node.
 
-    Assumes each non-comment line has at least:
-        <node> <site_index> <AA> ...
-    and concatenates column 3 (AA) along the alignment.
+    Expected columns:
+        Node  Site  State  p_A  p_R ...
 
     Returns
     -------
     dict[str, str]
         { node_name : amino_acid_sequence }
     """
-    seqs = defaultdict(str)
+    states = defaultdict(list)
+
     with open(state_file) as f:
         for line in f:
             if line.startswith("#") or not line.strip():
                 continue
+
             parts = line.strip().split()
             if len(parts) < 3:
                 continue
-            node, aa = parts[0], parts[2]
-            seqs[node] += aa
+
+            # Skip the IQ-TREE .state header line:
+            # Node  Site  State  p_A ...
+            if parts[0] == "Node" and parts[1] == "Site" and parts[2] == "State":
+                continue
+
+            node = parts[0]
+            try:
+                site = int(parts[1])
+            except ValueError:
+                continue
+
+            aa = parts[2]
+            states[node].append((site, aa))
+
+    seqs = {}
+    for node, site_states in states.items():
+        site_states.sort(key=lambda x: x[0])
+        seqs[node] = "".join(aa for _, aa in site_states)
+
     return seqs
 
+
+# ---------------------------
+# Parse indel (0/1 pattern) file
+# ---------------------------
 
 def parse_indel_file(indel_file):
     """
@@ -64,6 +91,10 @@ def parse_indel_file(indel_file):
             indels[name] = list(bits)
     return indels
 
+
+# ---------------------------
+# Merge ASR AA states with indel patterns
+# ---------------------------
 
 def merge_state_and_indel(state_dict, indel_dict):
     """
@@ -126,6 +157,10 @@ def merge_state_and_indel(state_dict, indel_dict):
     return merged
 
 
+# ---------------------------
+# FASTA writer
+# ---------------------------
+
 def write_fasta(seqs, outpath, remove_gaps=False):
     """
     Write sequences to FASTA.
@@ -145,6 +180,10 @@ def write_fasta(seqs, outpath, remove_gaps=False):
             f.write(f">{name}\n{out_seq}\n")
 
 
+# ---------------------------
+# main
+# ---------------------------
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -156,6 +195,10 @@ def main():
                         help="IQ-TREE .state file")
     parser.add_argument("--indel", required=True,
                         help="RAxML indel file (already mapped to IQ-TREE node names)")
+    parser.add_argument("--out_raw_withgap", default=None,
+                        help="Output raw IQ-TREE ASR FASTA with gaps")
+    parser.add_argument("--out_raw_nogap", default=None,
+                        help="Output raw IQ-TREE ASR FASTA with gaps removed")
     parser.add_argument("--out_withgap", default="ASR_final_withgap.fasta",
                         help="Output FASTA (alignment-like, with gaps)")
     parser.add_argument("--out_nogap", default="ASR_final_nogap.fasta",
@@ -174,13 +217,20 @@ def main():
     merged = merge_state_and_indel(state_dict, indel_dict)
     print(f"[INFO] Merged {len(merged)} sequences")
 
+    if args.out_raw_withgap:
+        write_fasta(state_dict, args.out_raw_withgap, remove_gaps=False)
+
+    if args.out_raw_nogap:
+        write_fasta(state_dict, args.out_raw_nogap, remove_gaps=True)
+
     write_fasta(merged, args.out_withgap, remove_gaps=False)
     write_fasta(merged, args.out_nogap, remove_gaps=True)
 
     print("[DONE] Output written:")
-    print(f"           with gaps : {args.out_withgap}")
-    print(f"           no gaps   : {args.out_nogap}")
-
+    print(f"           raw with gaps : {args.out_raw_withgap}")
+    print(f"           raw no gaps   : {args.out_raw_nogap}")
+    print(f"           indel with gaps : {args.out_withgap}")
+    print(f"           indel no gaps   : {args.out_nogap}")
 
 if __name__ == "__main__":
     main()

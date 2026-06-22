@@ -7,7 +7,7 @@ Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!
 
 System: Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz, 2 cores, 16 GB RAM
 
-RAxML-NG was called at 17-Dec-2025 14:56:44 as follows:
+RAxML-NG was called at 16-Jun-2026 15:52:56 as follows:
 
 raxml-ng --evaluate --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model BIN+G --tree toy_7tm_rhodopsin.raxml.bestTree --prefix ASR_toy_7tm_rhodopsin_indel_eval --outgroup OG_WP_285271495,OG_WP_136361479 --seed 12345
 
@@ -34,7 +34,7 @@ WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical!
 WARNING: Duplicate sequences found: 3
 
 NOTE: Reduced alignment (with duplicates and gap-only sites/taxa removed) 
-NOTE: was saved to: /Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
+NOTE: was saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
 
 Alignment comprises 1 partitions and 44 patterns
 
@@ -80,13 +80,13 @@ Free parameters (model + branch lengths): 35
 
 WARNING: Best ML tree contains 6 near-zero branches!
 
-Best ML tree with collapsed near-zero branches saved to: /Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
-Best ML tree saved to: /Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
-Optimized model saved to: /Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
+Best ML tree with collapsed near-zero branches saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
+Best ML tree saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
+Optimized model saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
 
-Execution log saved to: /Users/haruto/Desktop/temp/ConsistASR_test/test_toy_MacOS_RMP/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
+Execution log saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
 
-Analysis started: 17-Dec-2025 14:56:44 / finished: 17-Dec-2025 14:56:44
+Analysis started: 16-Jun-2026 15:52:56 / finished: 16-Jun-2026 15:52:56
 
-Elapsed time: 0.027 seconds
+Elapsed time: 0.038 seconds
 

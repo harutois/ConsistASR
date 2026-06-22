@@ -232,6 +232,10 @@ def main():
                         help="PAML .rst file (ASR result)")
     parser.add_argument("--indel", required=True,
                         help="RAxML indel file (0/1 patterns, node labels already mapped to PAML node IDs)")
+    parser.add_argument("--out_raw_withgap", default=None,
+                        help="Output raw PAML ASR FASTA with gaps")
+    parser.add_argument("--out_raw_nogap", default=None,
+                        help="Output raw PAML ASR FASTA with gaps removed")
     parser.add_argument("--out_withgap", default="ASR_PAML_indel_withgap.fasta",
                         help="Output FASTA (alignment-like, with gaps)")
     parser.add_argument("--out_nogap", default="ASR_PAML_indel_nogap.fasta",
@@ -250,10 +254,18 @@ def main():
     merged = merge_state_and_indel(state_dict, indel_dict)
     print(f"[INFO] Merged {len(merged)} sequences")
 
+    if args.out_raw_withgap:
+        write_fasta(state_dict, args.out_raw_withgap, remove_gaps=False)
+
+    if args.out_raw_nogap:
+        write_fasta(state_dict, args.out_raw_nogap, remove_gaps=True)
+
     write_fasta(merged, args.out_withgap, remove_gaps=False)
     write_fasta(merged, args.out_nogap, remove_gaps=True)
 
     print("[DONE] Output written:")
+    print(f"           raw with gaps : {args.out_raw_withgap}")
+    print(f"           raw no gaps   : {args.out_raw_nogap}")
     print(f"           with gaps : {args.out_withgap}")
     print(f"           no gaps   : {args.out_nogap}")
 

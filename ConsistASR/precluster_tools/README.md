@@ -69,6 +69,14 @@ This will:
   * no residue filter (all amino acids allowed)
   * Treemmer target: `N = 300` sequences
 
+After the run finishes, the main reduced alignment will be:
+
+```text
+cluster_work/seq_300_reduced.aln.fasta
+```
+
+when the default `--target 300` is used.
+
 ### 3.2 Merge two FASTA files
 
 ```bash
@@ -79,6 +87,26 @@ bash filter_cluster_generic.sh \
 ```
 
 `mgnify.fasta` and `known.fasta` are concatenated and then processed together.
+
+### 3.3 Main output files
+
+The main output of this workflow is the Treemmer-reduced alignment:
+
+```text
+seq_<N>_reduced.aln.fasta
+```
+
+where `<N>` is the Treemmer target specified by `--target`
+(default: `300`, giving `seq_300_reduced.aln.fasta`).
+
+The corresponding final tree and ID list are:
+
+```text
+seq_<N>.tree
+seq_<N>_ids.txt
+```
+
+For most downstream analyses, `seq_<N>_reduced.aln.fasta` is the file to inspect or reuse as the reduced representative alignment.
 
 ---
 
@@ -156,28 +184,25 @@ Within `--outdir` (default `cluster_work/`), the following files are produced:
     FastTree tree inferred from `seq_c95.aln.fasta` (WAG+Gamma).
 
   * `seq_c95.nwk_trimmed_list_X_N`
-    Treemmer kept-list file (for target `N`; e.g., `N=300`).
-    (Filename assumes Treemmer v0.3 style.)
+    Treemmer kept-list file for the target number of sequences.
+    The exact filename depends on Treemmer v0.3 naming behavior.
 
-  * `seq_N_reduced.aln.fasta`
-    Alignment of the Treemmer-reduced set (or the full 95% set if Treemmer output is not found).
+  * `seq_<N>_reduced.aln.fasta`
+    **Main reduced alignment file.**
+    This contains the final representative sequence set after CD-HIT clustering and Treemmer reduction.
+    If `--target 300` is used, this file is named `seq_300_reduced.aln.fasta`.
+    If the Treemmer kept-list file is not found, the script falls back to the full 95% clustered alignment.
 
 * **Final tree and report**
 
-  * `seq_N.tree`
-    Final FastTree (WAG+Gamma) inferred from `seq_N_reduced.aln.fasta`.
+  * `seq_<N>.tree`
+    Final FastTree inferred from `seq_<N>_reduced.aln.fasta`.
 
-  * `seq_N_ids.txt`
-    List of sequence IDs present in the final alignment / tree.
+  * `seq_<N>_ids.txt`
+    List of sequence IDs present in the final reduced alignment and tree.
 
   * `report.txt`
-    Summary of:
-
-    * input files
-    * filters used (`minlen`, `aa-filter`)
-    * sequence counts after each CD-HIT step
-    * Treemmer target `N`
-    * path to final IDs and final tree
+    Summary of input files, filtering options, sequence counts, Treemmer target, and paths to the main output files.
 
 ---
 

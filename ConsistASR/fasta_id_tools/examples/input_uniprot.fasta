@@ -1,0 +1,6 @@
+>tr|A0A285P2K2|A0A285P2K2_NATPI Nitric oxide reductase, NorZ apoprotein OS=Natronoarchaeum philippinense OX=558529 GN=SAMN06269185_2558 PE=4 SV=1
+MKTAYIAKQRQISFVKSHFSRQ
+>tr|A0A871BJ59|A0A871BJ59_HALGI Homolog to nitric oxide reductase subunit B OS=Haloferax gibbonsii OX=35746 GN=HfgLR_13555 PE=4 SV=1
+MTEITAAMVKELRESTGAGMMD
+>sp|P12345|TEST_PROT Example protein OS=Test organism OX=12345 GN=testA PE=1 SV=2
+GILGFVFTLTVPSER-------

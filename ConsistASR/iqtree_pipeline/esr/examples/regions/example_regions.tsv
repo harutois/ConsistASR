@@ -1,0 +1,4 @@
+region	group	start	end
+Region1	domain	1	50
+Region2	linker	51	70
+Region3	domain	71	120
