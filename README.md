@@ -69,14 +69,14 @@ Compared with v1.0.1, ConsistASR v1.1.0 adds:
 
 The binary gap-state reconstruction strategy used in the indel-aware workflow follows the general idea described in:
 
-- Aadland, K., Pugh, C., Kolaczkowski, B. High-Throughput Reconstruction of Ancestral Protein Sequence, Structure, and Molecular Function. In: Sikosek, T. (eds) Computational Methods in Protein Evolution. *Methods Mol. Biol.* vol 1851. Humana Press, New York, NY. (2019). https://doi.org/10.1007/978-1-4939-8736-8_8
+- Aadland, K., Pugh, C., and Kolaczkowski, B. High-Throughput Reconstruction of Ancestral Protein Sequence, Structure, and Molecular Function. *Methods Mol. Biol.* 1851, 135–170, (2019). https://doi.org/10.1007/978-1-4939-8736-8_8
 
 ---
 ## Citation
 
 If you use ConsistASR in your work, please cite the associated paper:
 
-- Ishikawa, H. and Mizutani, Y. Resurrecting Full-Length Ancestral Schizorhodopsins and Heliorhodopsins with Structure-Guided, Indel-Aware Sequence Reconstruction. *ACS Omega* (2026). https://doi.org/10.1021/acsomega.6c03010
+- Ishikawa, H., and Mizutani, Y. Resurrecting Full-Length Ancestral Schizorhodopsins and Heliorhodopsins with Structure-Guided, Indel-Aware Sequence Reconstruction. *ACS Omega* 11, 35989–36007, (2026). https://doi.org/10.1021/acsomega.6c03010
 
 Please also cite the software archive. For the latest version, use the Zenodo concept DOI:
 

@@ -23,9 +23,13 @@ def main():
         description="Generate a PAML codeml ctl file and run codeml for AA ASR."
     )
     ap.add_argument(
-        "--aln",
+        "--msa", "--aln",
+        dest="msa",
         required=True,
-        help="Alignment file in PHYLIP format (seqfile in codeml ctl).",
+        help=(
+            "Input amino-acid alignment file used as seqfile in codeml ctl. "
+            "--aln is accepted as a backward-compatible alias."
+        ),
     )
     ap.add_argument(
         "--tree",
@@ -50,7 +54,7 @@ def main():
     args = ap.parse_args()
 
     # basic checks
-    for path in [args.aln, args.tree]:
+    for path in [args.msa, args.tree, args.aa_ratefile]:
         if not os.path.isfile(path):
             sys.exit(f"[ERROR] File not found: {path}")
 
@@ -62,12 +66,12 @@ def main():
     out_path = os.path.join(args.outdir, f"{args.prefix}.out")
 
     # codeml works in the directory where the ctl is, with relative paths
-    aln_rel = os.path.relpath(os.path.abspath(args.aln), args.outdir)
+    msa_rel = os.path.relpath(os.path.abspath(args.msa), args.outdir)
     tree_rel = os.path.relpath(os.path.abspath(args.tree), args.outdir)
     aa_rate_rel = os.path.relpath(os.path.abspath(args.aa_ratefile), args.outdir)
 
     ctl_text = f"""
-    seqfile = {aln_rel}
+    seqfile = {msa_rel}
     treefile = {tree_rel}
     outfile = {os.path.basename(out_path)}
 
@@ -88,7 +92,7 @@ def main():
     ncatG = 4
 
     RateAncestor = 1   * output ancestral sequences
-    cleandata = 1
+    cleandata = 0
     """
 
     with open(ctl_path, "w") as f:

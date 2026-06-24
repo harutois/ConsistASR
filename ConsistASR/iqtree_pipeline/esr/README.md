@@ -65,6 +65,21 @@ python make_esr_proxy.py \
   --out-prefix ESR_SzR4
 ```
 
+Input options for `make_esr_proxy.py`:
+
+| Option         | Required | Description                                                                                                                                                                                   |
+| -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--msa`        | yes      | Input gapped MSA in FASTA format. The target sequence must be included.                                                                                                                       |
+| `--tree`       | yes      | Input Newick tree with branch lengths. The target tip label must match the FASTA header.                                                                                                      |
+| `--target`     | yes      | Target extant sequence to be reconstructed in the ESR proxy test. This ID must match both the FASTA header and the tree tip label.                                                            |
+| `--dummy-bl`   | no       | Branch length assigned to the two dummy descendant leaves. Default: `10.0`. Larger values, such as `100–500`, may be useful when branch lengths are re-optimized and `-blfix` cannot be used. |
+| `--dummy-aa-a` | no       | Dummy residue used for the first dummy sequence, `TARGET_A`. Default: `L`.                                                                                                                    |
+| `--dummy-aa-b` | no       | Dummy residue used for the second dummy sequence, `TARGET_B`. Default: `V`.                                                                                                                   |
+| `--out-prefix` | yes      | Output prefix. The script writes `<prefix>.fasta` and `<prefix>.tree`.                                                                                                                        |
+| `--wrap`       | no       | FASTA line width. Default: `80`.                                                                                                                                                              |
+
+The dummy residues should be standard amino-acid characters. Avoid using `X`, `-`, or other missing-data symbols, because they may be treated as unknown or missing residues by downstream ASR software. The two dummy residues should also be different from each other, so that the two dummy leaves are not identical.
+
 Outputs:
 
 * `ESR_SzR4.fasta`  (proxy alignment; contains `SzR_AM_5_00977_A` and `SzR_AM_5_00977_B`)
@@ -200,31 +215,30 @@ Mitigations:
 * Ensure the two dummy sequences differ (A != B) so they are not identical
 * Keep topology fixed via `-te ESR_*.tree`
 
-### 3) `SyntaxWarning: invalid escape sequence '\g'`
-
-This warning comes from Python string escaping in a regex replacement string.
-It is typically harmless. To silence it, use raw strings (prefix `r"..."`) in the relevant line.
-
 ---
 
 ## Minimal command summary
 
-# Create proxy
+**Create proxy**
+
 ```bash
 python make_esr_proxy.py --msa <MSA> --tree <TREE> --target <ID> --dummy-bl 500 --out-prefix ESR_<ID>
 ```
 
-# Run IQ-TREE ASR
+**Run IQ-TREE ASR**
+
 ```bash
 iqtree3 -s ESR_<ID>.fasta -m Q.pfam+R7 -te ESR_<ID>.tree -asr -nt AUTO --prefix ESR_<ID>_QPFAMR7
 ```
 
-# Score (global)
+**Score (global)**
+
 ```bash
 python score_esr.py --orig-msa <MSA> --target <ID> --state ESR_<ID>_QPFAMR7.state
 ```
 
-# Score by user-defined regions
+**Score by user-defined regions**
+
 ```bash
 python score_esr_by_region.py \
   --orig-msa <MSA> \
@@ -248,6 +262,6 @@ This proxy setup follows the idea of ESR: one known extant sequence is held out,
 
 The ESR strategy used in the proxy validation utilities follows the general idea described in:
 
-- Sennett, M. A., and Theobald, D. L. Extant sequence reconstruction: the accuracy of ancestral sequence reconstructions evaluated by extant sequence cross-validation. *J. Mol. Evol.* 92, 181–206, (2024). https://doi.org/10.1007/s00239-024-10162-3
+- Sennett, M. A., and Theobald, D. L. Extant Sequence Reconstruction: The Accuracy of Ancestral Sequence Reconstructions Evaluated by Extant Sequence Cross-Validation. *J. Mol. Evol.* 92, 181–206, (2024). https://doi.org/10.1007/s00239-024-10162-3
 
 ---

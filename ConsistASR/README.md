@@ -470,7 +470,7 @@ This produces, among others:
   
 ```bash
 python run_paml_asr.py \
-  --aln    toy_7tm_rhodopsin.fasta \
+  --msa    toy_7tm_rhodopsin.fasta \
   --tree   toy_7tm_rhodopsin.raxml.bestTree \
   --prefix ASR_toy_7tm_rhodopsin
 ```

@@ -12,16 +12,12 @@ CodonFreq = 2
 
 model = 2       * Empirical (e.g. LG)
 aaRatefile = ../lg.dat
-Mgene = 0
 
+NSsites = 0
+icode = 0
 fix_alpha = 0
 alpha = 0.5
 ncatG = 4
-
-fix_kappa = 1
-kappa = 2
-fix_omega = 1
-omega = 1
 
 RateAncestor = 1   * output ancestral sequences
 cleandata = 0
