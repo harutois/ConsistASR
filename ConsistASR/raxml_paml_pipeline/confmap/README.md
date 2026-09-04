@@ -1,6 +1,6 @@
 # confmap (PAML + AlphaFold) pipeline
 
-This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **PAML `.rst` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
+This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **PAML `rst` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
 
 The workflow is designed for **PAML-based ASR on with-gap ancestral alignments**, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
 The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware corrected sequences, as long as it matches the sequence used for AlphaFold prediction.
@@ -13,7 +13,7 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
   Main wrapper script. For a given internal node (PAML node ID, integer):
   - finds the corresponding AlphaFold model (`*_summary_confidences_*.json`, `*_model_X.cif`)
   - converts mmCIF → PDB (keeping pLDDT in the B-factor field)
-  - extracts **per-alignment-column** PP values for that node from the PAML `.rst` file
+  - extracts **per-alignment-column** PP values for that node from the PAML `rst` file
   - checks alignment length consistency against a **with-gap** FASTA
   - maps PP to B-factors (per residue) using `map_confidence_to_bfactor.py`
   - generates additional PDB files with **PP − pLDDT (scaled)** and **PP × pLDDT**
@@ -21,7 +21,7 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
 
 - `extract_pp_from_paml_rst.py`  
   Python script that:
-  - reads a PAML `.rst` file
+  - reads a PAML `rst` file
   - determines the internal node order from `node #N` lines
   - extracts the PP value for the specified node **for each alignment column** from the “site / Freq / Data” block
   - optionally checks length consistency against a with-gap FASTA  
@@ -58,7 +58,7 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
 ### Upstream (assumed already done)
 
 - **PAML ASR** (`codeml` or related program), producing:
-  - a PAML `.rst` file that contains a **marginal reconstruction of ancestral sequences** with per-site posterior probabilities, e.g.:
+  - a PAML `rst` file that contains a **marginal reconstruction of ancestral sequences** with per-site posterior probabilities, e.g.:
 
     ```text
     HeR_SzR_228_FFT_NS_1.rst
@@ -71,7 +71,7 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
   ASR_LGFG4_FFT_NS_1_indel_withgap.fasta
   ```
 
-  The alignment should be the same logical alignment used to generate the PAML `.rst` file (possibly after mapping from an upstream RAxML pipeline).
+  The alignment should be the same logical alignment used to generate the PAML `rst` file (possibly after mapping from an upstream RAxML pipeline).
 
 - **AlphaFold** run for the ancestral sequence of a specific node (Node233, Anc-SzR, etc.), producing a directory like:
 
@@ -103,7 +103,7 @@ The intended usage is:
 
 2. `run_confmap_paml.sh` is executed **inside that AlphaFold output directory**, using:
 
-   * a PAML `.rst` file
+   * a PAML `rst` file
    * a with-gap alignment FASTA file
    * the PAML internal node ID (integer, e.g. `233`)
 
@@ -139,7 +139,7 @@ Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used
 ### 4.1 PAML ASR outputs
 
 * `--rst <PAML_RST>`  
-  PAML `.rst` file containing marginal ancestral reconstructions, e.g.:
+  PAML `rst` file containing marginal ancestral reconstructions, e.g.:
 
   ```bash
   HeR_SzR_228_FFT_NS_1.rst
@@ -230,7 +230,7 @@ bash /path/to/run_confmap_paml.sh \
 
 Arguments:
 
-* `--rst`     : path to PAML `.rst` file
+* `--rst`     : path to PAML `rst` file
 * `--node`    : PAML node ID (integer, e.g. `233`)
 * `--withgap` : with-gap alignment FASTA containing a header `>PAML_NODE`
 * `--outdir`  : output directory for confmap results (default: `confmap`)
@@ -289,7 +289,7 @@ Within `--outdir` (default `confmap/`), the script writes:
 
 * `Node233_pp_values.txt`
 
-  * site-wise PP values (one per alignment column) extracted from the PAML `.rst`:
+  * site-wise PP values (one per alignment column) extracted from the PAML `rst`:
 
     * for each site line, the script takes the PP corresponding to the PAML node index (based on the `node #N` order)
     * no additional aggregation over states is done; values are directly the posterior probability for that node at each column
@@ -354,7 +354,7 @@ Useful options:
 
 * **PP (posterior probability)**
 
-  * Derived from PAML `.rst`:
+  * Derived from PAML `rst`:
     - for each site, PAML lists best states and their posterior probabilities for all nodes
     - the script extracts the probability corresponding to the chosen node ID
   * Typically represents the confidence in the ancestral residue at that site for this particular node
@@ -416,7 +416,7 @@ You can apply similar commands to:
 
 * **`[ERROR] Node N was not found in the RST file.`**
 
-  * Check that the requested `--node` (e.g., `233`) appears as `node #233` in the `.rst` file.
+  * Check that the requested `--node` (e.g., `233`) appears as `node #233` in the `rst` file.
   * If you changed node numbering between RAxML and PAML, ensure you are using the PAML node ID.
 
 * **Length mismatch warnings**
@@ -448,6 +448,6 @@ You can apply similar commands to:
 
 ---
 
-This PAML-based pipeline is intended to be fully parallel to the IQ-TREE-based version, differing only in how the site-wise PP values are extracted (from `.rst` instead of `.state`).
+This PAML-based pipeline is intended to be fully parallel to the IQ-TREE-based version, differing only in how the site-wise PP values are extracted (from `rst` instead of `.state`).
 
 ---

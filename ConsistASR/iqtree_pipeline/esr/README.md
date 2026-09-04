@@ -101,7 +101,7 @@ Example:
 iqtree3 -s ESR_SzR4.fasta \
   -m Q.pfam+R7 \
   -te ESR_SzR4.tree \
-  -asr \
+  --ancestral \
   -nt AUTO \
   --prefix ESR_SzR4_QPFAMR7
 ```
@@ -228,7 +228,7 @@ python make_esr_proxy.py --msa <MSA> --tree <TREE> --target <ID> --dummy-bl 500 
 **Run IQ-TREE ASR**
 
 ```bash
-iqtree3 -s ESR_<ID>.fasta -m Q.pfam+R7 -te ESR_<ID>.tree -asr -nt AUTO --prefix ESR_<ID>_QPFAMR7
+iqtree3 -s ESR_<ID>.fasta -m Q.pfam+R7 -te ESR_<ID>.tree --ancestral -nt AUTO --prefix ESR_<ID>_QPFAMR7
 ```
 
 **Score (global)**

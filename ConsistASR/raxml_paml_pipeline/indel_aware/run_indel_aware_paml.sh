@@ -69,6 +69,25 @@ if [ $# -eq 0 ]; then
   usage
 fi
 
+normalize_text_file() {
+  local label="$1"
+  local infile="$2"
+  local outfile="$3"
+
+  if [[ ! -f "$infile" ]]; then
+    echo "[ERROR] $label file not found: $infile" >&2
+    exit 1
+  fi
+
+  if grep -q $'\r' "$infile"; then
+    echo "[WARN] CR/CRLF line endings detected in $label: $infile" >&2
+    echo "[WARN] Creating LF-normalized working copy: $outfile" >&2
+    tr -d '\r' < "$infile" > "$outfile"
+  else
+    cp "$infile" "$outfile"
+  fi
+}
+
 # ---------------------------
 # Parse command-line options
 # ---------------------------
@@ -158,6 +177,40 @@ OUT_NOGAP="${PREFIX}_indel_nogap.fasta"
 OUT_WITHGAP="${PREFIX}_indel_withgap.fasta"
 MAP_TABLE="${PREFIX}_node_map.tsv"
 PAML_TREE="${PREFIX}_paml_nodes.tree"
+WORK_SUBDIR="${PREFIX}_indel_work"
+
+mkdir -p "$WORK_SUBDIR"
+
+# ---------------------------
+# Normalize line endings
+# ---------------------------
+# Original input files are not modified.
+# LF-normalized working copies are used internally to avoid hidden
+# Windows-style carriage returns in FASTA IDs, tree files, or rst files.
+
+MSA_FASTA_ORIG="$MSA_FASTA"
+TREEFILE_ORIG="$TREEFILE"
+RST_FILE_ORIG="$RST_FILE"
+
+MSA_FASTA_NORM="${WORK_SUBDIR}/input_msa.lf.fasta"
+TREEFILE_NORM="${WORK_SUBDIR}/input_tree.lf.nwk"
+RST_FILE_NORM="${WORK_SUBDIR}/input_paml_rst.lf"
+
+normalize_text_file "MSA FASTA" "$MSA_FASTA_ORIG" "$MSA_FASTA_NORM"
+normalize_text_file "RAxML tree" "$TREEFILE_ORIG" "$TREEFILE_NORM"
+normalize_text_file "PAML rst" "$RST_FILE_ORIG" "$RST_FILE_NORM"
+
+MSA_FASTA="$MSA_FASTA_NORM"
+TREEFILE="$TREEFILE_NORM"
+RST_FILE="$RST_FILE_NORM"
+
+# Remove accidental CR/LF characters and spaces from comma-separated outgroup list.
+OUTGROUPS="$(printf '%s' "$OUTGROUPS" | tr -d '\r\n' | sed 's/[[:space:]]//g')"
+
+if [[ -z "$OUTGROUPS" ]]; then
+  echo "[ERROR] --outgroup is empty after cleanup." >&2
+  exit 1
+fi
 
 IFS=',' read -r -a OG_ARR <<< "$OUTGROUPS"
 
@@ -238,7 +291,6 @@ python "${SCRIPT_DIR}/paml_state_and_indel_to_fasta.py" \
   --out_nogap "$OUT_NOGAP"
 
 # --- 6) Move intermediate files to a subdirectory ---
-WORK_SUBDIR="${PREFIX}_indel_work"
 echo "[INFO] =================================================="
 echo "[INFO] Moving intermediate files to: ${WORK_SUBDIR}"
 mkdir -p "$WORK_SUBDIR"

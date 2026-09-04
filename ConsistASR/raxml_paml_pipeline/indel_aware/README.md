@@ -379,6 +379,18 @@ It has been tested primarily on **7TM microbial rhodopsins**, but the approach i
 
 ---
 
+## Troubleshooting
+### Line endings
+
+The wrapper script internally normalizes input MSA, tree, and ASR output files to LF line endings inside the `*_indel_work/` directory. The original input files are not modified.
+
+This prevents hidden Windows-style carriage returns from causing taxon-name matching errors, for example:
+
+```text
+Outgroup taxon 'XXXX' not found
+```
+
+---
 ## Citation
 
 If you use this pipeline in a publication, please cite:
