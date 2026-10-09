@@ -28,7 +28,7 @@ before converting to PHYLIP / feeding into ASR pipelines.
 
 Rename **all** sequences to `seq01`, `seq02`, … and write a mapping table.
 
-This is the safest and most PHYLIP-friendly option when you do not need human-readable IDs inside the ASR tools.
+This is the safest option when short, simple sequence IDs are preferred.
 
 ### Usage
 
@@ -60,7 +60,7 @@ If a generated ID accidentally collides (should be extremely rare), `_1`, `_2`, 
 
 ## 2. `fasta_truncate_id_simple.py`
 
-Truncate each header at the **first character that is not** `[A–Z, a–z, 0–9, _]`, and use the remaining prefix as the new ID.
+Truncate each header at the **first character that is not** `[A-Za-z0-9_]`, and use the remaining prefix as the new ID.
 
 This keeps IDs relatively short while preserving a recognizable fragment of the original identifier.
 Examples:
@@ -84,22 +84,22 @@ python3 fasta_truncate_id_simple.py \
 
 If two different headers would lead to the same truncated ID (e.g. `QBQ84358.1` and `QBQ84358.2` → both `QBQ84358`), the script automatically generates `QBQ84358_1`, `QBQ84358_2`, … and prints a warning to STDERR.
 
-If a header does **not** start with `[A–Z0–9_]` at all (pathological case), a fallback ID (`id1`, `id2`, …) is used and a warning is emitted.
+If a header does **not** start with `[A-Za-z0-9_]` at all (pathological case), a fallback ID (`id1`, `id2`, …) is used and a warning is emitted.
 
 ---
 
 ## 3. `fasta_sanitize_id_underscore.py`
 
-Replace every non-`[A–Z, a–z, 0–9, _]` character by an underscore, compress multiple underscores, and strip leading/trailing underscores.
+Replace every non-`[A-Za-z0-9_]` character with an underscore, compress multiple underscores, and strip leading/trailing underscores.
 
 This preserves most of the original header information, but makes it safe for programs that dislike spaces or punctuation.
 
 Examples:
 
 * `AM_5S_00009|AM_5S-c1__COG5524_Bacteriorhodopsin_bac_rhodopsin_ASGARD`
-  → `AM_5S_00009_AM_5S_c1__COG5524_Bacteriorhodopsin_bac_rhodopsin_ASGARD`
+  → `AM_5S_00009_AM_5S_c1_COG5524_Bacteriorhodopsin_bac_rhodopsin_ASGARD`
 * `QBQ84358.1 schizorhodopsin [Promethearchaeota archaeon]`
-  → `QBQ84358_1_schizorhodopsin__Promethearchaeota_archaeon_`
+  → `QBQ84358_1_schizorhodopsin_Promethearchaeota_archaeon`
 * `SAMEA 2622822_312577` → `SAMEA_2622822_312577`
 
 Note that resulting IDs can be quite long; for strict PHYLIP use you may prefer script (1) or (2).
@@ -113,7 +113,7 @@ python3 fasta_sanitize_id_underscore.py \
   --map id_map_sanitize.tsv
 ```
 
-If the sanitized ID becomes empty (e.g. header was only symbols), the script falls back to `id1`, `id2`, … and warns on STDERR.
+If the sanitized ID becomes empty (e.g. the header contains only symbols), the script falls back to `id1`, `id2`, ….
 If duplicates are produced, `_1`, `_2`, … are appended with warnings.
 
 ---
@@ -293,7 +293,7 @@ This is useful when you want to ensure that all input headers follow the expecte
 Small example input and expected output files are provided in:
 
 ```text
-fasta_id_tools/examples/uniprot_rename/
+fasta_id_tools/examples/
 ```
 
 ---
@@ -302,7 +302,7 @@ fasta_id_tools/examples/uniprot_rename/
 
 Typical workflow options:
 
-* **Maximum safety for PHYLIP / PAML**
+* **Maximum compatibility with tools requiring simple sequence IDs**
   Use **sequential renaming**:
 
   ```bash

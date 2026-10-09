@@ -8,7 +8,7 @@
 #   2) Evaluates the IQ-TREE topology with RAxML-NG under BIN+G
 #      and writes a bestTree on the binary alignment.
 #   3) Runs RAxML(-HPC) ancestral reconstruction on the binary
-#      alignment (indel ASR).
+#     gap-state alignment.
 #   4) Maps RAxML node IDs to IQ-TREE node IDs.
 #   5) Writes raw IQ-TREE ASR FASTA and merges IQ-TREE .state
 #      with indel states to produce gap-aware ancestral FASTA.
@@ -21,12 +21,10 @@
 #     --prefix ASR_QpfamR7_PSI_TM_Coffee \
 #     --outgroup "OG_WP_285271495,OG_WP_136361479,OG_WP_010903286"
 #
-# Requirements (in PATH or same directory):
-#   - msa_to_binary.py
-#   - map_raxml_to_iqtree_nodes.py
-#   - state_and_indel_to_fasta.py
-#   - raxml-ng
-#   - raxmlHPC
+# Requirements:
+#  - msa_to_binary.py, map_raxml_to_iqtree_nodes.py, and
+#    state_and_indel_to_fasta.py in the same directory as this wrapper
+#  - raxml-ng, raxmlHPC, and python in PATH
 # ============================================================
 
 set -euo pipefail
@@ -44,7 +42,7 @@ usage() {
 Usage: $0 --msa MSA_FASTA --tree TREEFILE --state STATE_FILE --prefix OUT_PREFIX --outgroup "TAXA,..."
 
 Required arguments:
-  --msa       Amino-acid MSA in FASTA format (same sequences as used for IQ-TREE ASR)
+  --msa       Amino-acid MSA in FASTA format (the exact alignment used for IQ-TREE ASR)
   --tree      IQ-TREE topology file (.treefile) for the ASR run
   --state     IQ-TREE ancestral state file (.state)
   --prefix    Output prefix (used for all intermediate and final files)
@@ -58,11 +56,11 @@ Example:
     --prefix ASR_QpfamR7_PSI_TM_Coffee \\
     --outgroup "OG1,OG2,OG3"
 EOF
-  exit 1
 }
 
 if [ $# -eq 0 ]; then
-  usage
+   usage
+   exit 1
 fi
 
 normalize_text_file() {
@@ -93,6 +91,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --msa requires an argument."
         usage
+        exit 1
       fi
       MSA_FASTA="$2"
       shift 2
@@ -101,6 +100,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --tree requires an argument."
         usage
+        exit 1
       fi
       TREEFILE="$2"
       shift 2
@@ -109,6 +109,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --state requires an argument."
         usage
+        exit 1
       fi
       STATE_FILE="$2"
       shift 2
@@ -117,6 +118,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --prefix requires an argument."
         usage
+        exit 1
       fi
       PREFIX="$2"
       shift 2
@@ -125,16 +127,19 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --outgroup requires an argument."
         usage
+        exit 1
       fi
       OUTGROUPS="$2"
       shift 2
       ;;
     -h|--help)
       usage
+      exit 0
       ;;
     *)
       echo "[ERROR] Unknown option: $1"
       usage
+      exit 1
       ;;
   esac
 done
@@ -145,6 +150,7 @@ done
 if [[ -z "$MSA_FASTA" || -z "$TREEFILE" || -z "$STATE_FILE" || -z "$PREFIX" || -z "$OUTGROUPS" ]]; then
   echo "[ERROR] Missing required argument(s)."
   usage
+  exit 1
 fi
 
 for f in "$MSA_FASTA" "$TREEFILE" "$STATE_FILE"; do
@@ -158,7 +164,7 @@ command -v raxml-ng   >/dev/null 2>&1 || { echo "[ERROR] raxml-ng not found in P
 command -v raxmlHPC   >/dev/null 2>&1 || { echo "[ERROR] raxmlHPC not found in PATH";   exit 1; }
 command -v python     >/dev/null 2>&1 || { echo "[ERROR] python not found in PATH";     exit 1; }
 
-# These Python scripts are expected to be in the same directory or in PATH:
+# These Python scripts are expected to be in the same directory as this wrapper:
 #   - msa_to_binary.py
 #   - map_raxml_to_iqtree_nodes.py
 #   - state_and_indel_to_fasta.py
@@ -244,7 +250,7 @@ if [ ! -f "$BEST_TREE" ]; then
 fi
 
 echo "[INFO] =================================================="
-echo "[INFO] 3) RAxML-HPC -f A (BINGAMMA, indel ASR)"
+echo "[INFO] 3) RAxML-HPC -f A (BINGAMMA, binary gap-state ASR)"
 echo "[INFO] =================================================="
 raxmlHPC -f A \
   -m BINGAMMA \
@@ -274,7 +280,7 @@ python "${SCRIPT_DIR}/map_raxml_to_iqtree_nodes.py" \
   --map_table "$MAP_TABLE"
 
 echo "[INFO] =================================================="
-echo "[INFO] 5) Generating gap-aware ancestral FASTA"
+echo "[INFO] 5) Generating indel-aware ancestral FASTA"
 echo "[INFO] =================================================="
 python "${SCRIPT_DIR}/state_and_indel_to_fasta.py" \
   --state "$STATE_FILE" \
@@ -290,7 +296,9 @@ echo "[INFO] Moving intermediate files to: ${WORK_SUBDIR}"
 mkdir -p "$WORK_SUBDIR"
 
 # Binary alignment and its reduced version
-mv -f "$BIN_PHY" "${BIN_PHY}.reduced" "$WORK_SUBDIR"/ 2>/dev/null || true
+for f in "$BIN_PHY" "${BIN_PHY}.reduced"; do
+  [[ -f "$f" ]] && mv -f "$f" "$WORK_SUBDIR"/
+done
 
 # raxml-ng intermediate files (evaluation on binary MSA)
 mv -f ${EVAL_PREFIX}.raxml.* "$WORK_SUBDIR"/ 2>/dev/null || true

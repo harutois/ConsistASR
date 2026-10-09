@@ -1,23 +1,21 @@
 
 seqfile = ../toy_7tm_rhodopsin.fasta
-treefile = ../toy_7tm_rhodopsin.raxml.bestTree
+treefile = ASR_toy_7tm_rhodopsin.paml_tree.nwk
 outfile = ASR_toy_7tm_rhodopsin.out
 
 noisy = 9
 verbose = 1
 runmode = 0
 
-seqtype = 2     * 2: amino acid
-CodonFreq = 2
+seqtype = 2
 
-model = 2       * Empirical (e.g. LG)
+model = 3
 aaRatefile = ../lg.dat
 
-NSsites = 0
-icode = 0
 fix_alpha = 0
 alpha = 0.5
 ncatG = 4
 
-RateAncestor = 1   * output ancestral sequences
+RateAncestor = 1
 cleandata = 0
+fix_blength = 0

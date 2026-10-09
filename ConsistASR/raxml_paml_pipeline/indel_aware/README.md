@@ -2,9 +2,9 @@
 
 This directory provides a small pipeline that combines:
 
-- **RAxML** amino-acid phylogeny (used as the fixed tree for PAML ASR)
+- **RAxML** amino-acid phylogeny used as the fixed topology for PAML ASR
 - **PAML** amino-acid ancestral sequence reconstruction (`rst`)
-- **RAxML(-NG + RAxML-HPC)** binary (0/1) indel reconstruction
+- **RAxML-NG and classic RAxML** binary gap-state reconstruction
 
 to generate both **raw PAML ASR sequences** and **indel-aware ancestral amino-acid sequences** in FASTA format:
 
@@ -27,7 +27,8 @@ Scripts in this directory:
   Converts an amino-acid MSA in FASTA format to a binary (0/1) MSA in PHYLIP format for RAxML.
 
 - `map_raxml_to_paml_nodes_from_rst.py`  
-  Extracts the PAML tree with node labels from a `rst` file, applies a simple “tail-normalization” to leaf names, and maps RAxML internal node labels to PAML node IDs by comparing **leaf sets** (clades).  
+  Extracts the PAML tree with node labels from a `rst` file, conditionally removes PAML-added numeric prefixes from tip labels when the prefix-stripped name exactly matches a RAxML tip label, and maps RAxML internal node labels to PAML node IDs by comparing sets of descendant tip labels.
+  
   It then rewrites the node labels in `RAxML_marginalAncestralStates.*` to the corresponding PAML node IDs.
 
 - `paml_state_and_indel_to_fasta.py`  
@@ -37,7 +38,7 @@ Scripts in this directory:
 
 ## Software requirements
 
-- **Python 3.7+**
+- **Python 3.10+**
   - Only the Python standard library is used in this subpipeline (no extra packages required).
 
 - **RAxML-NG**  
@@ -54,8 +55,7 @@ Scripts in this directory:
 - A POSIX-like shell environment (Linux / macOS)  
   - `bash`, `mkdir`, `mv`, etc.
 
-> **Note:** PAML itself is **not** called by this pipeline.  
-> It assumes that PAML ASR has already been performed and that the `rst` file and the RAxML tree used for that ASR are available.
+> **Note:** PAML itself is **not**  called here; this pipeline assumes that PAML ASR has already been performed and that the `rst` file and the RAxML tree used for that ASR are available.
 
 ---
 
@@ -65,7 +65,7 @@ The main wrapper expects:
 
 1. **MSA in FASTA format**
 
-   - Same alignment used for the RAxML+PAML ASR run.  
+   - The MSA must be the exact alignment used for the RAxML/PAML ASR analysis. Do not realign, trim, reorder alignment columns, or otherwise modify it before running the indel-aware workflow. 
    - Example:  
      `HeR_SzR_228_FFT_NS_1.fasta`
 
@@ -73,7 +73,7 @@ The main wrapper expects:
 
    - RAxML tree given to PAML as the fixed topology.  
    - Example:  
-     `HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre`
+     `HeR_SzR_228_FFT_NS_1.raxml.bestTree`
 
 3. **PAML ASR result file (`rst`)**
 
@@ -100,7 +100,7 @@ Basic example:
 ```bash
 bash /path/to/run_indel_aware_paml.sh \
   --msa   HeR_SzR_228_FFT_NS_1.fasta \
-  --tree  HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre \
+  --tree  HeR_SzR_228_FFT_NS_1.raxml.bestTree \
   --rst   HeR_SzR_228_FFT_NS_1.rst \
   --prefix ASR_LGFG4_FFT_NS_1 \
   --outgroup "OG_WP_285271495,OG_WP_136361479,OG_WP_010903286"
@@ -122,8 +122,6 @@ bash /path/to/run_indel_aware_paml.sh \
 
 * `--outgroup` (required)
   Comma-separated list of outgroup taxa; must match sequence names in the MSA.
-
-*(A separate `--workdir` option is not exposed; intermediate files are automatically placed in `<prefix>_indel_work/`.)*
 
 ---
 
@@ -156,7 +154,7 @@ bash /path/to/run_indel_aware_paml.sh \
 
      * `<prefix>_indel_eval.raxml.bestTree`
 
-3. **RAxML-HPC binary ASR (indel reconstruction)**
+3. **RAxML-HPC binary gap-state ASR**
 
    ```bash
    raxmlHPC -f A \
@@ -170,8 +168,7 @@ bash /path/to/run_indel_aware_paml.sh \
    * Key outputs (in workdir):
 
      * `RAxML_nodeLabelledRootedTree.<prefix>_binary`
-     * `RAxML_marginalAncestralStates.<prefix>_binary`
-       (0/1 indel states per node)
+     * `RAxML_marginalAncestralStates.<prefix>_binary` (0/1 indel states per node)
 
 4. **Map RAxML node IDs to PAML node IDs**
 
@@ -181,16 +178,13 @@ bash /path/to/run_indel_aware_paml.sh \
 
      1. Extract the PAML tree with node labels from the `rst` file.
      2. Apply *tail-normalization* on PAML leaf names:
-
-        * Example:
-
+         * Example:
           * PAML leaf: `112_OG_WP_010903286`
           * RAxML leaf: `OG_WP_010903286`
           * Normalization: `112_OG_WP_010903286 → OG_WP_010903286`
-     3. Compare **leaf sets** (clades) between:
-
-        * PAML tree (with PAML node IDs)
-        * `RAxML_nodeLabelledRootedTree.*` (with RAxML numeric node labels)
+     3. Compare **leaf sets** (clades) of each internal node between:
+          * PAML tree (with PAML node IDs)
+          * `RAxML_nodeLabelledRootedTree.*` (with RAxML numeric node labels)
      4. Build a mapping: **RAxML node → PAML node**.
      5. Rewrite the node labels in `RAxML_marginalAncestralStates.*` accordingly.
 
@@ -207,11 +201,11 @@ bash /path/to/run_indel_aware_paml.sh \
        paml_node   raxml_node   n_tips   status
        ```
 
-5. **Write raw PAML ASR FASTA and merge `rst` AA states with RAxML indel data**
+5. **Raw PAML ASR outputs are written directly from the `rst` file before indel-aware processing.**
 
    * Script: `paml_state_and_indel_to_fasta.py`
 
-   * Raw PAML ASR outputs are written directly from the `rst` file before indel correction:
+   * Raw PAML ASR outputs are written directly from the `rst` file before indel-aware processing:
 
      * `<prefix>_raw_asr_withgap.fasta`  
        Raw PAML ancestral sequences at alignment length.
@@ -219,15 +213,15 @@ bash /path/to/run_indel_aware_paml.sh \
      * `<prefix>_raw_asr_nogap.fasta`  
        Raw PAML ancestral sequences with all `'-'` characters removed.
 
-   * Indel-aware correction rule for each position:
+   * Indel-aware processing rule for each position:
 
-     * `bit = 0` → `'-'` (deletion at that column)
-     * `bit = 1` → keep the AA state (if AA is already `'-'`, keep `'-'`)
+     * `bit = 0` → `'-'` (inferred gap/absence state)
+     * `bit = 1` → retain the PAML amino-acid state (if AA is already `'-'`, keep `'-'`)
 
    * Indel-aware outputs:
 
      * `<prefix>_indel_withgap.fasta`  
-       Alignment-style ancestral sequences after indel correction.
+       Alignment-style ancestral sequences after indel-aware processing.
 
      * `<prefix>_indel_nogap.fasta`  
        Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
@@ -257,36 +251,84 @@ bash /path/to/run_indel_aware_paml.sh \
 
 ---
 
+## Output summary
+
+After successful execution, you should see:
+
+* **Main outputs**
+
+  * `<prefix>_raw_asr_withgap.fasta`  
+    Raw PAML ASR sequences before indel correction, at alignment length.
+
+  * `<prefix>_raw_asr_nogap.fasta`  
+    Raw PAML ASR sequences with all gaps removed.
+
+  * `<prefix>_indel_withgap.fasta`  
+    Indel-aware ancestral sequences, alignment length identical to the MSA.
+
+  * `<prefix>_indel_nogap.fasta`  
+    Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
+
+  * `<prefix>_paml_nodes.tree`  
+    PAML node-labelled tree extracted from the `rst` file.
+
+* **Mapping table**
+
+  * `<prefix>_node_map.tsv`
+    Internal node mapping between RAxML and PAML:
+
+    * `status = mapped` → safe 1:1 mapping
+    * `status = unmapped` → typically a single node near a polytomy / outgroup
+
+* **Intermediate files**
+
+  * `<prefix>_indel_work/`  
+    Contains intermediate files, including:
+
+    * `<prefix>_binary.phy`
+    * `<prefix>_binary.phy.reduced`
+    * `<prefix>_indel_eval.raxml.*`
+    * `<prefix>_indel_ASR.iqtree_named.txt`
+    * `RAxML_marginalAncestralStates.<prefix>_binary`
+    * `RAxML_nodeLabelledRootedTree.<prefix>_binary`
+
+    The file `<prefix>_indel_ASR.paml_named.txt` contains mapped binary indel states and is kept for inspection/debugging, but it is not usually needed for downstream analysis.
+
+---
+
 ## Example folder structure
 
 A typical run might produce a directory like:
 
 ```text
-test/
+.
+├── HeR_SzR_228_FFT_NS_1.raxml.bestTree
+├── HeR_SzR_228_FFT_NS_1.rst
 ├── ASR_LGFG4_FFT_NS_1_raw_asr_withgap.fasta
 ├── ASR_LGFG4_FFT_NS_1_raw_asr_nogap.fasta
-├── ASR_LGFG4_FFT_NS_1_indel_nogap.fasta
 ├── ASR_LGFG4_FFT_NS_1_indel_withgap.fasta
+├── ASR_LGFG4_FFT_NS_1_indel_nogap.fasta
 ├── ASR_LGFG4_FFT_NS_1_paml_nodes.tree
 ├── ASR_LGFG4_FFT_NS_1_node_map.tsv
 ├── ASR_LGFG4_FFT_NS_1_indel_work/
-│   ├── ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
-│   ├── ASR_LGFG4_FFT_NS_1_binary.phy
-│   ├── ASR_LGFG4_FFT_NS_1_binary.phy.reduced
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestModel
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestTree
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestTreeCollapsed
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.log
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.rba
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.reduced.phy
-│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.startTree
-│   ├── RAxML_info.ASR_LGFG4_FFT_NS_1_binary
-│   ├── RAxML_marginalAncestralProbabilities.ASR_LGFG4_FFT_NS_1_binary
-│   ├── RAxML_marginalAncestralStates.ASR_LGFG4_FFT_NS_1_binary
-│   └── RAxML_nodeLabelledRootedTree.ASR_LGFG4_FFT_NS_1_binary
+│   ├── ASR_LGFG4_FFT_NS_1_binary.phy
+│   ├── ASR_LGFG4_FFT_NS_1_binary.phy.reduced
+│   ├── ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestModel
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestTree
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.bestTreeCollapsed
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.log
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.rba
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.reduced.phy
+│   ├── ASR_LGFG4_FFT_NS_1_indel_eval.raxml.startTree
+│   ├── RAxML_info.ASR_LGFG4_FFT_NS_1_binary
+│   ├── RAxML_marginalAncestralProbabilities.ASR_LGFG4_FFT_NS_1_binary
+│   ├── RAxML_marginalAncestralStates.ASR_LGFG4_FFT_NS_1_binary
+│   ├── RAxML_nodeLabelledRootedTree.ASR_LGFG4_FFT_NS_1_binary
+│   ├── input_msa.lf.fasta
+│   ├── input_paml_rst.lf
+│   └── input_tree.lf.nwk
 ├── HeR_SzR_228_FFT_NS_1.fasta
-├── HeR_SzR_228_FFT_NS_1.raxml.bestTree.tre
-├── HeR_SzR_228_FFT_NS_1.rst
 └── (pipeline scripts)
 ```
 
@@ -298,21 +340,20 @@ Typical informational output:
 
 ```text
 [INFO] PAML leaves (raw) example: [...]
-[INFO] PAML leaves (tail) example: [...]
 [INFO] RAxML leaves example:       [...]
-[INFO] Leaf-name overlap size:     228
+[INFO] PAML leaf labels normalized by numeric-prefix removal: 228
 [INFO] PAML internal nodes with labels: 227
-[INFO] RAxML internal nodes with labels: 227
+[INFO] RAxML internal nodes with ancestral states: 227
 [INFO] Mapped internal nodes: 227
 [INFO] Writing node mapping table to: ASR_LGFG4_FFT_NS_1_node_map.tsv
-[DONE] ancestralStates written to: ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
-[INFO] Lines processed: 227, renamed: 2
+[DONE] Marginal ancestral states written to: ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
+[INFO] Lines processed: 227, renamed: 227
 ...
-[INFO] Reading PAML rst: HeR_SzR_228_FFT_NS_1.rst
+[INFO] Reading PAML rst: ASR_LGFG4_FFT_NS_1_indel_work/input_paml_rst.lf
 [INFO] Loaded 227 nodes from rst
 [INFO] Reading indel file: ASR_LGFG4_FFT_NS_1_indel_ASR.paml_named.txt
-[INFO] Loaded 227 indel profiles
-[INFO] Merging AA states and indel patterns...
+[INFO] Loaded 227 binary gap-state profiles
+[INFO] Merging PAML AA states and binary gap-state information...
 [INFO] Merged 227 sequences
 ```
 
@@ -320,7 +361,8 @@ Notes:
 
 * A small number of **renamed** node labels (e.g. `ROOT → 229`) is expected:
 
-  * Most RAxML node numbers already match PAML’s node IDs.
+  * RAxML and PAML node labels may differ even when they represent the same internal node. The mapping script therefore compares descendant-tip sets rather than relying on node numbers alone.
+  * In some datasets, many numeric labels may already coincide by chance or because of the tree conversion history, but this is not assumed by the workflow.
   * Often only the root (or a few nodes) require renaming.
 * If some nodes are missing in either the `rst` or the indel file, you may see warnings like:
 
@@ -341,7 +383,7 @@ To inspect the mapping, open `<prefix>_node_map.tsv` and check:
   * PHYLIP format used by RAxML-NG/RAxML is strict:
 
     * No spaces in sequence names.
-    * Classic PHYLIP requires short IDs; here we use a simple writer, but **avoid spaces and exotic characters** anyway.
+    * Unique / no whitespace / avoid unusual punctuation short IDs; here we use a simple writer, but **avoid spaces and exotic characters** anyway.
 
   * It is strongly recommended to clean/normalize sequence IDs beforehand
     (e.g. replace spaces and special characters with underscores).
@@ -359,7 +401,7 @@ To inspect the mapping, open `<prefix>_node_map.tsv` and check:
     112_OG_WP_010903286
     ```
 
-  * `map_raxml_to_paml_nodes_from_rst.py` assumes this format and strips the numeric prefix during tail-normalization so that leaves match the MSA / RAxML names (e.g. `OG_WP_010903286`).
+  * `map_raxml_to_paml_nodes_from_rst.py` detects this pattern and removes the numeric prefix only when the resulting label matches a RAxML tip label during tail-normalization so that leaves match the MSA / RAxML names (e.g. `OG_WP_010903286`).
 
 ---
 
@@ -395,9 +437,9 @@ Outgroup taxon 'XXXX' not found
 
 If you use this pipeline in a publication, please cite:
 
+* PAML
 * RAxML-NG
 * RAxML (classic RAxML)
-* PAML
 
 and the *ConsistASR* paper.
 

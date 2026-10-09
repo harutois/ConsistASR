@@ -25,6 +25,7 @@
 # ============================================================
 
 import argparse
+import math
 import os
 import sys
 
@@ -47,11 +48,20 @@ def parse_pdb_bfactors(pdb_path, atom_name="CA", chain_id=None):
     list[dict]
         One record per matching atom.
     """
+
     records = []
     current_model = ""
 
-    with open(pdb_path, encoding="utf-8") as f:
-        for line in f:
+    try:
+        fh = open(pdb_path, encoding="utf-8")
+    except OSError as exc:
+        sys.exit(
+            f"[ERROR] Failed to open PDB file {pdb_path}: {exc}"
+        )
+
+    with fh:
+        for lineno, line in enumerate(fh, start=1):
+
             if line.startswith("MODEL"):
                 parts = line.split()
                 current_model = parts[1] if len(parts) > 1 else ""
@@ -60,18 +70,39 @@ def parse_pdb_bfactors(pdb_path, atom_name="CA", chain_id=None):
             if not line.startswith("ATOM"):
                 continue
 
+            # PDB B-factor field occupies columns 61-66.
+            # A valid ATOM record must therefore contain at least 66 chars.
+            if len(line.rstrip("\n\r")) < 66:
+                sys.exit(
+                    f"[ERROR] Malformed ATOM record in {pdb_path} "
+                    f"at line {lineno}: line is too short."
+                )
+
             atom = line[12:16].strip()
+
             if atom != atom_name:
                 continue
 
             chain = line[21].strip()
+
             if chain_id is not None and chain != chain_id:
                 continue
 
+            raw_bfactor = line[60:66]
+
             try:
-                bfactor = float(line[60:66])
+                bfactor = float(raw_bfactor)
             except ValueError:
-                continue
+                sys.exit(
+                    f"[ERROR] Invalid B-factor in {pdb_path} "
+                    f"at line {lineno}: {raw_bfactor!r}"
+                )
+
+            if not math.isfinite(bfactor):
+                sys.exit(
+                    f"[ERROR] Non-finite B-factor in {pdb_path} "
+                    f"at line {lineno}: {bfactor}"
+                )
 
             records.append(
                 {
@@ -95,30 +126,45 @@ def write_tsv(records, out_handle, values_only=False, header=True):
 
     If values_only=True, write only one B-factor value per line.
     """
+
     if values_only:
         for rec in records:
             out_handle.write(f"{rec['bfactor']:.2f}\n")
         return
 
-    columns = ["file", "model", "chain", "resseq", "icode", "resname", "atom", "bfactor"]
+    columns = [
+        "file",
+        "model",
+        "chain",
+        "resseq",
+        "icode",
+        "resname",
+        "atom",
+        "bfactor",
+    ]
 
     if header:
         out_handle.write("\t".join(columns) + "\n")
 
     for rec in records:
         row = []
+
         for col in columns:
             if col == "bfactor":
                 row.append(f"{rec[col]:.2f}")
             else:
                 row.append(str(rec[col]))
+
         out_handle.write("\t".join(row) + "\n")
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Extract B-factor values from one or more PDB files."
+        description=(
+            "Extract B-factor values from one or more PDB files."
+        )
     )
+
     parser.add_argument(
         "--in",
         dest="input_pdbs",
@@ -126,26 +172,31 @@ def main():
         nargs="+",
         help="Input PDB file(s)",
     )
+
     parser.add_argument(
         "--out",
         default=None,
         help="Output TSV file. If omitted, write to stdout.",
     )
+
     parser.add_argument(
         "--atom",
         default="CA",
         help="Atom name to extract. Default: CA",
     )
+
     parser.add_argument(
         "--chain",
         default=None,
         help="Optional chain ID filter, e.g. A",
     )
+
     parser.add_argument(
         "--values-only",
         action="store_true",
         help="Write only B-factor values, one per line.",
     )
+
     parser.add_argument(
         "--no-header",
         action="store_true",
@@ -157,8 +208,12 @@ def main():
     all_records = []
 
     for pdb_path in args.input_pdbs:
+
         if not os.path.isfile(pdb_path):
-            print(f"[ERROR] File not found: {pdb_path}", file=sys.stderr)
+            print(
+                f"[ERROR] File not found: {pdb_path}",
+                file=sys.stderr,
+            )
             sys.exit(1)
 
         records = parse_pdb_bfactors(
@@ -169,21 +224,42 @@ def main():
 
         if not records:
             print(
-                f"[WARN] No matching ATOM records found in {pdb_path} "
+                f"[ERROR] No matching ATOM records found in {pdb_path} "
                 f"(atom={args.atom}, chain={args.chain or 'any'})",
                 file=sys.stderr,
             )
+            sys.exit(1)
 
         all_records.extend(records)
 
+    if not all_records:
+        print(
+            "[ERROR] No B-factor records were extracted.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     if args.out:
-        with open(args.out, "w", encoding="utf-8") as out:
-            write_tsv(
-                all_records,
-                out,
-                values_only=args.values_only,
-                header=not args.no_header,
+        try:
+            with open(
+                args.out,
+                "w",
+                encoding="utf-8",
+            ) as out:
+                write_tsv(
+                    all_records,
+                    out,
+                    values_only=args.values_only,
+                    header=not args.no_header,
+                )
+        except OSError as exc:
+            print(
+                f"[ERROR] Failed to write output file "
+                f"{args.out}: {exc}",
+                file=sys.stderr,
             )
+            sys.exit(1)
+
     else:
         write_tsv(
             all_records,

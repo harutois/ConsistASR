@@ -1,9 +1,10 @@
 
 # ESR proxy validation utilities (IQ-TREE)
 
+These utilities are optional and are not required for the indel-aware ASR workflow.
+
 This folder contains helper scripts to perform a lightweight **Extant Sequence Reconstruction (ESR)** proxy test.
-The idea is to remove one extant sequence from the dataset and replace it with a synthetic proxy subtree, then
-use IQ-TREE ASR on that modified dataset to see how well the internal proxy node reconstructs the held-out extant sequence.
+The idea is to remove one extant sequence from the dataset and replace it with a synthetic proxy subtree, then use IQ-TREE ASR on that modified dataset to see how well the internal proxy node reconstructs the held-out extant sequence.
 
 Scripts:
 
@@ -27,14 +28,13 @@ Given an original alignment + tree:
    `TARGET` residues in the original alignment.
 
 Key point:
-- This is a **proxy validation** (not a full simulation study). It checks whether the pipeline can reconstruct
-  known extant sequences from their phylogenetic context under the chosen alignment/model settings.
+- This is a **proxy validation** (not a full simulation study). It checks whether the pipeline can reconstruct known extant sequences from their phylogenetic context under the chosen alignment/model settings.
 
 ---
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.10+ (the provided ConsistASR environment currently uses Python `>=3.10,<3.13` because of Treemmer compatibility)
 - IQ-TREE v3 (`iqtree3`)
 - Original MSA FASTA (gapped)
 - Original tree NEWICK (with branch lengths)
@@ -43,7 +43,7 @@ Key point:
 
 ## Step-by-step usage
 
-### 0) Prepare inputs
+### 0. Prepare inputs
 
 Example filenames (project-specific):
 - MSA: `HeR_SzR_OG.PSITM.fasta`
@@ -52,7 +52,7 @@ Example filenames (project-specific):
   - SzR4: `SzR_AM_5_00977`
   - HeR 48C12: `HeR_AVZ43932`
 
-### 1) Create ESR proxy dataset
+### 1. Create ESR proxy dataset
 
 Example (SzR4):
 
@@ -91,9 +91,9 @@ Recommended branch-length handling depends on the IQ-TREE model.
 
 * If the selected model supports fixed branch lengths, use `-blfix` and a moderate dummy branch length such as `--dummy-bl 10`.
 
-* If branch-length fixing is not supported, for example under FreeRate models such as `+R`, do not use `-blfix`. In that case, longer dummy branches such as `--dummy-bl 100–500` may be useful, but the behavior should be checked empirically.
+* In the IQ-TREE v3 configuration tested here, `-blfix` was not supported with the FreeRate (`+R`) model used for the rhodopsin analysis. In that case, longer dummy branches such as `--dummy-bl 100–500` may be useful, but the behavior should be checked empirically.
 
-### 2) Run IQ-TREE ASR on the proxy dataset
+### 2. Run IQ-TREE ASR on the proxy dataset
 
 Example:
 
@@ -112,10 +112,9 @@ Expected output:
 
 Important:
 
-* Do NOT use `-blfix` when using FreeRate models (e.g. `+R`). IQ-TREE may throw:
-  `ERROR: Fixing branch lengths not supported under specified site rate model`.
+* In the IQ-TREE v3 configuration tested here, do not use `-blfix` with the `+R` model used in this example. IQ-TREE may report: `ERROR: Fixing branch lengths not supported under specified site rate model`.
 
-### 3) Score ESR accuracy (global)
+### 3. Score ESR accuracy (global)
 
 ```bash
 python score_esr.py \
@@ -130,7 +129,7 @@ Output fields:
 * `Identity (%)`: fraction of comparable sites where the MAP residue equals the true residue
 * `Mean posterior prob assigned to TRUE residue`: mean posterior probability assigned to the true residue
 
-### 4) Optional: score ESR by user-defined regions
+### 4. Optional: score ESR by user-defined regions
 
 Regional scoring is optional. It is useful when meaningful sequence regions are known, such as transmembrane helices, extramembrane loops, secondary-structure elements, domains, or linkers.
 
@@ -193,7 +192,7 @@ These settings are not universal recommendations. For other models or protein fa
 
 ## Troubleshooting
 
-### 1) “Sequence TARGET_A contains only gaps or missing data”
+### 1. “Sequence TARGET_A contains only gaps or missing data”
 
 Cause:
 
@@ -202,18 +201,15 @@ In this project, make_esr_proxy.py uses fixed dummy amino acids (L and V), so th
 
 Fix:
 
-* Ensure dummy sequences are composed of standard amino acids (e.g. all `L` and all `V`), not `X`.
-* If `make_esr_proxy.py` currently outputs `X`-only dummies, modify it to output two different real amino acids.
-  (This project used `L` and `V`.)
+* Ensure that the dummy sequences contain standard amino-acid characters rather than `X`, `-`, or other missing-data symbols. The current `make_esr_proxy.py` defaults to `L` and `V`.
 
-### 2) The proxy subtree collapses / A and B become parallel in the inferred tree
+### 2. The proxy subtree appears collapsed after branch-length optimization
 
-This can happen because branch lengths are optimized and the proxy constraints are not fully preserved.
-Mitigations:
+When branch lengths are re-optimized, one or more branches in the proxy subtree may become very short, making the subtree appear effectively collapsed in the output tree or tree visualization.
 
-* Increase `--dummy-bl` (e.g. 500+)
-* Ensure the two dummy sequences differ (A != B) so they are not identical
-* Keep topology fixed via `-te ESR_*.tree`
+* Increase `--dummy-bl` and check the resulting branch lengths empirically  
+* Ensure that the two dummy sequences differ (`A != B`)  
+* Use `-te ESR_*.tree` to keep the intended topology fixed
 
 ---
 
@@ -251,7 +247,7 @@ python score_esr_by_region.py \
 
 ## Notes on interpretation
 
-This proxy setup follows the idea of ESR: one known extant sequence is held out, represented as an internal proxy node, and reconstructed by ASR from the surrounding phylogenetic context.
+This proxy setup follows the idea of ESR: one known extant sequence is held out, represented as an internal proxy node, and reconstructed by ASR from the surrounding phylogenetic context. Because the original MSA is retained rather than recomputed after removing the target sequence, this proxy test evaluates reconstruction accuracy conditional on the chosen alignment and model configuration.
 
 * ESR proxy validation is a diagnostic baseline, not a full simulation-based estimate of deep-node ASR accuracy.
 * Region-level accuracy depends on the supplied region definitions and the target sequence coordinates.

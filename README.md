@@ -12,11 +12,13 @@ The main focus is on full-length 7-transmembrane (7TM) microbial rhodopsins, inc
 ConsistASR provides tools to:
 
 - extract **raw ancestral protein sequences** as FASTA files from **IQ-TREE `.state`** and **PAML `rst`** outputs
-- generate **indel-aware corrected ancestral FASTA files** by combining amino-acid ASR with binary gap-state reconstruction
+- generate **indel-aware ancestral FASTA files** by combining amino-acid ASR with binary gap-state reconstruction
 - map **ASR posterior probability (PP), AlphaFold pLDDT, PP × pLDDT, and PP − pLDDT onto AlphaFold models** via B-factors
 - sanitize FASTA headers before using PHYLIP/RAxML/PAML-style workflows
 - pre-filter and cluster large sequence datasets before tree building
 - perform ESR proxy validation for checking whether known extant sequences can be reconstructed from phylogenetic context
+
+![IQT_PAML_fasta](images/IQT_PAML_fasta.png)
 
 ---
 ## Indel-aware ASR workflow
@@ -38,7 +40,7 @@ The `confmap` scripts map ASR posterior probability and AlphaFold confidence met
 ---
 ## Installation (quick)
 
-From the top-level `ConsistASR` directory:
+Quick installation using the provided conda environment:
 
 ```bash
 git clone https://github.com/harutois/ConsistASR.git
@@ -54,15 +56,17 @@ For detailed installation, pipeline descriptions, and examples, please see the m
 The recommended conda environment uses Python `>=3.10,<3.13`. This upper bound is mainly for compatibility with Treemmer, which depends on the deprecated Python `cgi` module removed in Python 3.13.
 
 ---
-## What's new in v1.1.0
+## What's new since v1.0.1
 
-Compared with v1.0.1, ConsistASR v1.1.0 adds:
+Compared with v1.0.1, ConsistASR v1.1.3 includes:
 
-- raw ASR FASTA extraction from IQ-TREE `.state` outputs
-- raw ASR FASTA extraction from PAML `rst` outputs
+- raw ASR FASTA extraction from IQ-TREE `.state` and PAML `rst` outputs
+- confidence mapping of ASR posterior probabilities and AlphaFold pLDDT onto predicted structures
 - UniProt-style FASTA header renaming utility
+- generalized pre-clustering / filtering utilities for large sequence datasets
 - generalized ESR proxy validation utilities
-- updated toy examples and documentation
+- improved PAML ASR example helper (`run_paml_asr.py`) with input validation and PAML-compatible tree preparation
+- updated toy examples, validation checks, and documentation
 
 ---
 ## Background reference

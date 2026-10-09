@@ -10,8 +10,8 @@
 #   1) Converts an amino-acid MSA to a binary (0/1) gap matrix.
 #   2) Evaluates the given topology with RAxML-NG under BIN+G
 #      and writes a bestTree on the binary alignment.
-#   3) Runs RAxML(-HPC) ancestral reconstruction on the binary
-#      alignment (indel ASR).
+#   3) Runs RAxML-HPC ancestral reconstruction on the binary
+#      gap-state alignment.
 #   4) Maps RAxML node IDs to PAML node IDs using the rst tree.
 #   5) Writes raw PAML ASR FASTA from the rst file and merges
 #      PAML rst AA states and indel states to produce gap-aware
@@ -25,12 +25,10 @@
 #     --prefix ASR_LGFG4_FFT_NS_1 \
 #     --outgroup "OG_WP_285271495,OG_WP_136361479,OG_WP_010903286"
 #
-# Requirements (in PATH or same directory):
-#   - msa_to_binary.py
-#   - map_raxml_to_paml_nodes_from_rst.py
-#   - paml_state_and_indel_to_fasta.py
-#   - raxml-ng
-#   - raxmlHPC
+# Requirements:
+#  - msa_to_binary.py, map_raxml_to_paml_nodes_from_rst.py, and
+#    paml_state_and_indel_to_fasta.py in the same directory as this wrapper
+#  - raxml-ng, raxmlHPC, and python in PATH
 # ============================================================
 
 set -euo pipefail
@@ -48,7 +46,7 @@ usage() {
 Usage: $0 --msa MSA_FASTA --tree TREEFILE --rst RST_FILE --prefix OUT_PREFIX --outgroup "TAXA,..."
 
 Required arguments:
-  --msa       Amino-acid MSA in FASTA format (same sequences as used for RAxML/PAML ASR)
+  --msa       Amino-acid MSA in FASTA format (the exact alignment used for RAxML/PAML ASR)
   --tree      RAxML topology file (.nwk) used for the PAML ASR run
   --rst       PAML ASR output file (rst)
   --prefix    Output prefix (used for all intermediate and final files)
@@ -62,11 +60,11 @@ Example:
     --prefix ASR_LGFG4_FFT_NS_1 \\
     --outgroup "OG1,OG2,OG3"
 EOF
-  exit 1
 }
 
 if [ $# -eq 0 ]; then
-  usage
+   usage
+   exit 1
 fi
 
 normalize_text_file() {
@@ -97,6 +95,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --msa requires an argument."
         usage
+        exit 1
       fi
       MSA_FASTA="$2"
       shift 2
@@ -105,6 +104,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --tree requires an argument."
         usage
+        exit 1
       fi
       TREEFILE="$2"
       shift 2
@@ -113,6 +113,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --rst requires an argument."
         usage
+        exit 1
       fi
       RST_FILE="$2"
       shift 2
@@ -121,6 +122,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --prefix requires an argument."
         usage
+        exit 1
       fi
       PREFIX="$2"
       shift 2
@@ -129,16 +131,19 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then
         echo "[ERROR] --outgroup requires an argument."
         usage
+        exit 1
       fi
       OUTGROUPS="$2"
       shift 2
       ;;
     -h|--help)
       usage
+      exit 0
       ;;
     *)
       echo "[ERROR] Unknown option: $1"
       usage
+      exit 1
       ;;
   esac
 done
@@ -149,6 +154,7 @@ done
 if [[ -z "$MSA_FASTA" || -z "$TREEFILE" || -z "$RST_FILE" || -z "$PREFIX" || -z "$OUTGROUPS" ]]; then
   echo "[ERROR] Missing required argument(s)."
   usage
+  exit 1
 fi
 
 for f in "$MSA_FASTA" "$TREEFILE" "$RST_FILE"; do
@@ -162,7 +168,7 @@ command -v raxml-ng   >/dev/null 2>&1 || { echo "[ERROR] raxml-ng not found in P
 command -v raxmlHPC   >/dev/null 2>&1 || { echo "[ERROR] raxmlHPC not found in PATH";   exit 1; }
 command -v python     >/dev/null 2>&1 || { echo "[ERROR] python not found in PATH";     exit 1; }
 
-# These Python scripts are expected to be in the same directory or in PATH:
+# These Python scripts are expected to be in the same directory as this wrapper:
 #   - msa_to_binary.py
 #   - map_raxml_to_paml_nodes_from_rst.py
 #   - paml_state_and_indel_to_fasta.py
@@ -249,7 +255,7 @@ if [ ! -f "$BEST_TREE" ]; then
 fi
 
 echo "[INFO] =================================================="
-echo "[INFO] 3) RAxML-HPC -f A (BINGAMMA, indel ASR)"
+echo "[INFO] 3) RAxML-HPC -f A (BINGAMMA, binary gap-state ASR)"
 echo "[INFO] =================================================="
 raxmlHPC -f A \
   -m BINGAMMA \
@@ -280,7 +286,7 @@ python "${SCRIPT_DIR}/map_raxml_to_paml_nodes_from_rst.py" \
   --paml_tree_out "$PAML_TREE"
 
 echo "[INFO] =================================================="
-echo "[INFO] 5) Generating gap-aware ancestral FASTA (PAML ASR + indel)"
+echo "[INFO] 5) Generating indel-aware ancestral FASTA"
 echo "[INFO] =================================================="
 python "${SCRIPT_DIR}/paml_state_and_indel_to_fasta.py" \
   --rst "$RST_FILE" \
@@ -296,7 +302,9 @@ echo "[INFO] Moving intermediate files to: ${WORK_SUBDIR}"
 mkdir -p "$WORK_SUBDIR"
 
 # Binary alignment and its reduced version
-mv -f "$BIN_PHY" "${BIN_PHY}.reduced" "$WORK_SUBDIR"/ 2>/dev/null || true
+for f in "$BIN_PHY" "${BIN_PHY}.reduced"; do
+  [[ -f "$f" ]] && mv -f "$f" "$WORK_SUBDIR"/
+done
 
 # raxml-ng intermediate files (evaluation on binary MSA)
 mv -f ${EVAL_PREFIX}.raxml.* "$WORK_SUBDIR"/ 2>/dev/null || true
@@ -316,5 +324,6 @@ echo "[INFO]  - raw FASTA (gap-stripped)        : $OUT_RAW_NOGAP"
 if [ -n "${MAP_TABLE:-}" ]; then
   echo "[INFO]  - Node mapping table              : $MAP_TABLE"
 fi
+echo "[INFO]  - PAML node-labelled tree         : $PAML_TREE"
 echo "[INFO]  - Intermediate files moved to     : ${WORK_SUBDIR}"
 echo "[INFO] =================================================="

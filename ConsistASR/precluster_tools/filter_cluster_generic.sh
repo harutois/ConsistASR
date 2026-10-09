@@ -8,7 +8,7 @@
 # Steps:
 #   1) Merge one or two input FASTA files
 #   2) Clean sequences (remove gaps / non-letter characters)
-#   3) Length filter (default: >= 200 aa)
+#   3) Length filter (default: >= 50 aa)
 #   4) Optional residue filter (e.g. keep sequences containing K)
 #   5) Remove exact duplicates (sequence-only)
 #   6) CD-HIT clustering (99% → 97% → 95% → 90%)
@@ -26,7 +26,7 @@
 #
 # Usage examples:
 #
-#   # Single input file, default settings (minlen=200, no AA filter, target=300)
+#   # Single input file, default settings (minlen=50, no AA filter, target=300)
 #   bash filter_cluster_generic.sh \
 #       --in input.fasta \
 #       --outdir cluster_work
@@ -50,10 +50,10 @@ set -euo pipefail
 INPUT1=""
 INPUT2=""
 OUTDIR="cluster_work"
-MINLEN=200          # minimum sequence length (aa)
+MINLEN=50          # minimum sequence length (aa)
 AA_FILTER=""        # e.g. "K" or "KR"; if empty, residue filter is skipped
 TARGET_N=300        # target N for Treemmer
-THREADS=8           # threads for CD-HIT / FastTree
+THREADS=8           # threads for CD-HIT
 TREEMMER_PY="${TREEMMER_PY:-$HOME/software/Treemmer/Treemmer_v0.3.py}"
 
 usage() {
@@ -67,12 +67,12 @@ Required:
 Optional:
   --extra PATH   Second FASTA file to merge with --in
   --outdir DIR   Output directory (default: cluster_work)
-  --minlen INT   Min length (aa) for length filter (default: 200)
+  --minlen INT   Min length (aa) for length filter (default: 50)
   --aa-filter STR
                  Keep only sequences that contain at least one of these residues.
                  Example: "K" or "KR". If omitted or empty, this step is skipped.
   --target INT   Target number of sequences for Treemmer (default: 300)
-  --threads INT  Number of threads for CD-HIT / FastTree (default: 8)
+  --threads INT  Number of threads for CD-HIT (default: 8)
   --treemmer PATH
                  Path to Treemmer Python script (default: \$TREEMMER_PY)
   -h, --help     Show this help and exit
@@ -178,8 +178,8 @@ awk '/^>/ { print; next }
 echo "[INFO] Length filter: >= ${MINLEN} aa"
 IDS_LEN="${OUTDIR}/ids_len${MINLEN}.txt"
 
-seqkit fx2tab --name --length "${CLEANED}" \
-  | awk -v minlen="${MINLEN}" '$2 >= minlen { print $1 }' \
+seqkit fx2tab --name --only-id --length "${CLEANED}" \
+  | awk -F '\t' -v minlen="${MINLEN}" '$2 >= minlen { print $1 }' \
   > "${IDS_LEN}"
 
 LEN_FASTA="${OUTDIR}/seq_len${MINLEN}.fasta"
@@ -198,7 +198,7 @@ if [[ -n "${AA_FILTER}" ]]; then
     PATTERN="[${AA_CLASS}]"
 
     AA_FASTA="${OUTDIR}/seq_len${MINLEN}_aa${AA_CLASS}.fasta"
-    seqkit grep -s -r -p "${PATTERN}" "${CURRENT}" > "${AA_FASTA}"
+    seqkit grep -s -i -r -p "${PATTERN}" "${CURRENT}" > "${AA_FASTA}"
 
     CURRENT="${AA_FASTA}"
 else
@@ -254,18 +254,20 @@ python "${TREEMMER_PY}" "${TREE95}" -X "${TARGET_N}" -np
 KEPT_LIST="${OUTDIR}/seq_c95.nwk_trimmed_list_X_${TARGET_N}"
 
 if [[ ! -f "${KEPT_LIST}" ]]; then
-    echo "[WARN] Treemmer kept-list not found at: ${KEPT_LIST}" >&2
-    echo "      Please check Treemmer output naming; adjust script if needed." >&2
-else
-    echo "[INFO] Kept-list: ${KEPT_LIST}"
+    echo "[ERROR] Treemmer kept-list not found: ${KEPT_LIST}" >&2
+    echo "        Check Treemmer output naming or compatibility." >&2
+    exit 1
 fi
 
+echo "[INFO] Kept-list: ${KEPT_LIST}"
+
 REDUCED_ALN="${OUTDIR}/seq_${TARGET_N}_reduced.aln.fasta"
-if [[ -f "${KEPT_LIST}" ]]; then
-    seqkit grep -f "${KEPT_LIST}" "${ALN95}" > "${REDUCED_ALN}"
-else
-    echo "[WARN] Using full 95% alignment for final tree (no trimming)."
-    cp "${ALN95}" "${REDUCED_ALN}"
+seqkit grep -f "${KEPT_LIST}" "${ALN95}" > "${REDUCED_ALN}"
+
+FINAL_N=$(grep -c '^>' "${REDUCED_ALN}")
+
+if [[ "${FINAL_N}" -ne "${TARGET_N}" ]]; then
+    echo "[WARN] Final reduced alignment contains ${FINAL_N} sequences; requested Treemmer target was ${TARGET_N}." >&2
 fi
 
 # -------------------------
@@ -276,7 +278,7 @@ echo "[INFO] Building final FastTree on reduced alignment..."
 FastTree -wag -gamma "${REDUCED_ALN}" > "${FINAL_TREE}"
 
 FINAL_IDS="${OUTDIR}/seq_${TARGET_N}_ids.txt"
-grep '^>' "${REDUCED_ALN}" | sed 's/^>//' > "${FINAL_IDS}"
+seqkit seq --name --only-id "${REDUCED_ALN}" > "${FINAL_IDS}"
 
 # -------------------------
 # 9. Simple report
@@ -300,6 +302,8 @@ REPORT="${OUTDIR}/report.txt"
     echo "After CD-HIT 95%: $(grep -c '^>' "${C95}") seqs"
     echo "After CD-HIT 90%: $(grep -c '^>' "${C90}") seqs"
     echo "Treemmer target N: ${TARGET_N}"
+    echo "Reduced alignment: ${REDUCED_ALN}"
+    echo "Final sequences:   ${FINAL_N}"
     echo "Final IDs:         ${FINAL_IDS}"
     echo "Final tree:        ${FINAL_TREE}"
 } > "${REPORT}"

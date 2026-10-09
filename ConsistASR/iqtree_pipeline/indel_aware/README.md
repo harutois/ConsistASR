@@ -2,7 +2,7 @@
 
 This directory provides a small pipeline that combines:
 
-- **IQ-TREE** amino-acid ancestral state reconstruction (`.state`, `.treefile`)
+- **IQ-TREE** amino-acid phylogeny and ancestral state reconstruction (`.state`, `.treefile`)
 - **RAxML(-NG + RAxML-HPC)** binary (0/1) indel reconstruction
 
 to generate both **raw IQ-TREE ASR sequences** and **indel-aware ancestral amino-acid sequences** in FASTA format:
@@ -20,7 +20,7 @@ This is the IQ-TREE-based part of the *ConsistASR* toolkit.
 Scripts in this directory:
 
 - `run_indel_aware_iqtree.sh`  
-  Main wrapper script that runs the full pipeline end-to-end.
+  Main wrapper script that runs the full IQ-TREE + RAxML indel-aware pipeline end-to-end.
 
 - `msa_to_binary.py`  
   Converts an amino-acid MSA in FASTA format to a binary (0/1) MSA in PHYLIP format for RAxML.
@@ -35,7 +35,7 @@ Scripts in this directory:
 
 ## Software requirements
 
-- **Python 3.7+**
+- **Python 3.10+**
   - Only standard library is used in this subpipeline (no extra packages required).
 
 - **RAxML-NG**  
@@ -47,7 +47,7 @@ Scripts in this directory:
 - A POSIX-like shell environment (Linux / macOS)  
   - `bash`, `mkdir`, `mv` etc.
 
-> **Note:** IQ-TREE itself is not called here; this pipeline assumes that IQ-TREE has already been run and produced the `.treefile` and `.state` files.
+> **Note:** IQ-TREE itself is **not** called here; this pipeline assumes that IQ-TREE has already been run and produced the `.treefile` and `.state` files.
 
 ---
 
@@ -57,7 +57,7 @@ The main wrapper expects IQ-TREE ASR outputs plus the original MSA:
 
 1. **MSA in FASTA format**
 
-   - Same alignment used for IQ-TREE ASR  
+   - The MSA must be the exact alignment used for IQ-TREE ASR analysis. Do not realign, trim, reorder alignment columns, or otherwise modify it before running the indel-aware workflow. 
    - Example:  
      `HeR_SzR_228_PSI_TM_Coffee.fasta`
 
@@ -125,7 +125,7 @@ bash /path/to/run_indel_aware_iqtree.sh \
    * Rule: `'-' → 0`, any residue (`A–Z`) → `1`
    * Output:
 
-     * `<prefix>_binary.phy` (in `<prefix>_indel_work/`)
+     * `<prefix>_binary.phy` (later moved into `<prefix>_indel_work/`)
 
 2. **RAxML-NG likelihood evaluation on the binary data**
 
@@ -140,7 +140,7 @@ bash /path/to/run_indel_aware_iqtree.sh \
      --seed 12345
    ```
 
-   * Output (in workdir): best-scoring tree
+   * Output (in workdir): best-scoring tree on the binary data
 
      * `<prefix>_indel_eval.raxml.bestTree`
 
@@ -158,19 +158,20 @@ bash /path/to/run_indel_aware_iqtree.sh \
    * Key outputs (in workdir):
 
      * `RAxML_nodeLabelledRootedTree.<prefix>_binary`
-     * `RAxML_marginalAncestralStates.<prefix>_binary`
+     * `RAxML_marginalAncestralStates.<prefix>_binary` (0/1 indel states per node)
 
 4. **Map RAxML node IDs to IQ-TREE `NodeXX`**
 
    * Script: `map_raxml_to_iqtree_nodes.py`
-   * Compares **leaf sets** of each internal node between:
-
+   * Compare **leaf sets** (clades) of each internal node between:
      * IQ-TREE ASR tree (`.treefile`)
      * RAxML node-labelled tree (`RAxML_nodeLabelledRootedTree.*`)
+     
    * Outputs:
 
      * Indel file with IQ-TREE-style node names:
        `<prefix>_indel_ASR.iqtree_named.txt`
+       (used as `--indel` input for the next step)
      * Node mapping table (TSV):
        `<prefix>_node_map.tsv`
        with columns:
@@ -187,19 +188,21 @@ bash /path/to/run_indel_aware_iqtree.sh \
 
      * `<prefix>_raw_asr_withgap.fasta`
        Raw IQ-TREE ancestral sequences at alignment length.
+       
      * `<prefix>_raw_asr_nogap.fasta`
        Raw IQ-TREE ancestral sequences with all `'-'` removed.
 
    * Indel-aware correction rule for each position:
 
-     * `bit = 0` → `'-'` (deletion)
-     * `bit = 1` → keep amino-acid state (if AA is already `'-'`, keep `'-'`)
+     * `bit = 0` → `'-'` (inferred gap/absence state)
+     * `bit = 1` → retain the amino-acid state (if AA is already `'-'`, keep `'-'`)
 
    * Indel-aware outputs:
 
-     * `<prefix>_indel_withgap.fasta`
-       Alignment-style ancestral sequences after indel correction.
-     * `<prefix>_indel_nogap.fasta`
+     * `<prefix>_indel_withgap.fasta`  
+       Alignment-style ancestral sequences after indel-aware processing.
+
+     * `<prefix>_indel_nogap.fasta`  
        Gap-stripped indel-aware ancestral sequences, suitable for AlphaFold input.
 
 6. **Move intermediate files**
@@ -268,18 +271,18 @@ After successful execution, you should see:
 A typical run might produce a directory like:
 
 ```text
-test/
+.
 ├── ASR_QpfamR7_PSI_TM_Coffee.state
 ├── ASR_QpfamR7_PSI_TM_Coffee.treefile
 ├── ASR_QpfamR7_PSI_TM_Coffee_raw_asr_withgap.fasta
 ├── ASR_QpfamR7_PSI_TM_Coffee_raw_asr_nogap.fasta
-├── ASR_QpfamR7_PSI_TM_Coffee_indel_nogap.fasta
 ├── ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta
+├── ASR_QpfamR7_PSI_TM_Coffee_indel_nogap.fasta
 ├── ASR_QpfamR7_PSI_TM_Coffee_node_map.tsv
 ├── ASR_QpfamR7_PSI_TM_Coffee_indel_work
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_binary.phy
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_binary.phy.reduced
-│   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_ASR.iqtree_named.txt
+│   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_ASR.iqtree_named.txt
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestModel
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestTree
 │   ├── ASR_QpfamR7_PSI_TM_Coffee_indel_eval.raxml.bestTreeCollapsed
@@ -290,7 +293,10 @@ test/
 │   ├── RAxML_info.ASR_QpfamR7_PSI_TM_Coffee_binary
 │   ├── RAxML_marginalAncestralProbabilities.ASR_QpfamR7_PSI_TM_Coffee_binary
 │   ├── RAxML_marginalAncestralStates.ASR_QpfamR7_PSI_TM_Coffee_binary
-│   └── RAxML_nodeLabelledRootedTree.ASR_QpfamR7_PSI_TM_Coffee_binary
+│   ├── RAxML_nodeLabelledRootedTree.ASR_QpfamR7_PSI_TM_Coffee_binary
+│   ├── input_iqtree_state.lf.state
+│   ├── input_msa.lf.fasta
+│   └── input_tree.lf.nwk
 ├── HeR_SzR_228_PSI_TM_Coffee.fasta
 └── (pipeline scripts)
 ```
@@ -302,15 +308,18 @@ test/
 Typical informational output:
 
 ```text
-[INFO] Binary MSA written to: ASR_QpfamR7_PSI_TM_Coffee_indel_work/ASR_QpfamR7_PSI_TM_Coffee_binary.phy
+[INFO] Reading ASR_QpfamR7_PSI_TM_Coffee_indel_work/input_msa.lf.fasta ...
+[INFO] 228 sequences loaded
+[DONE] Written to ASR_QpfamR7_PSI_TM_Coffee_binary.phy
 ...
 [INFO] IQ-TREE internal nodes with NodeXX labels: 226
-[INFO] RAxML internal nodes with numeric labels: 227
+[INFO] RAxML ancestral-state labels found: 227
+[INFO] Tree taxon sets match: 228 taxa
+[INFO] RAxML internal nodes with ancestral states: 227
 [INFO] Mapped internal nodes: 226
-[WARN] 1 RAxML nodes could not be mapped to any NodeXX (topology mismatch or polytomy near outgroup?)
+[WARN] 1 RAxML internal nodes could not be mapped to an IQ-TREE NodeXX label (for example because of differences in internal-node resolution near a polytomy or root).
 ...
-[WARN] 1 nodes found in .state but missing from indel file (skipped).
-[WARN] 1 nodes found in indel file but not in .state (ignored).
+[WARN] 1 node(s) found in indel file but not in .state (ignored): 454
 [INFO] Merged 226 sequences
 ```
 
@@ -336,7 +345,8 @@ If something looks suspicious:
   * PHYLIP format used by RAxML-NG/RAxML is strict:
 
     * No spaces in sequence names
-    * 10-character limit in “classic” PHYLIP; here we use a simple, more permissive writer, but **avoid spaces and exotic symbols**.
+    * Unique / no whitespace / avoid unusual punctuation short IDs; here we use a simple writer, but **avoid spaces and exotic characters** anyway.
+
   * It is strongly recommended to clean/normalize sequence IDs beforehand
     (e.g. replace spaces and special characters with underscores).
 
@@ -353,6 +363,7 @@ If something looks suspicious:
 
   * IQ-TREE amino-acid states
   * RAxML binary indel states
+
 * It assumes that:
 
   * The IQ-TREE ASR tree and RAxML trees are based on **the same taxon set**.
@@ -379,7 +390,7 @@ Outgroup taxon 'XXXX' not found
 
 If you use this pipeline in a publication, please cite:
 
-* IQ-TREE / IQ-TREE3
+* IQ-TREE
 * RAxML-NG
 * RAxML (classic RAxML)
 

@@ -1,9 +1,10 @@
 # confmap (IQ-TREE + AlphaFold) pipeline
 
-This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) onto **AlphaFold** models as B-factors, and to derive derived metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
+This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **IQ-TREE `.state` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
 
-The workflow is designed for **IQ-TREE-based ASR on indel-aware alignments**, combined with **AlphaFold monomer** predictions for selected ancestral nodes (e.g., Anc-SzR, Anc-HeR, Node112, etc.).
-The with-gap FASTA can represent either raw ASR sequences or indel-aware corrected sequences, as long as it matches the sequence used for AlphaFold prediction.
+The workflow is designed for **IQ-TREE-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment used to generate the IQ-TREE `.state` file, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
+
+The with-gap FASTA can represent either raw IQ-TREE ASR sequences or indel-aware processed sequences, provided that it preserves the same alignment-column coordinates as the IQ-TREE `.state` file and that its gap-stripped sequence matches the sequence used for **AlphaFold** prediction.
 
 ---
 
@@ -12,8 +13,9 @@ The with-gap FASTA can represent either raw ASR sequences or indel-aware correct
 - `run_confmap_iqtree.sh`  
   Main wrapper script. For a given internal node:
   - finds the corresponding AlphaFold model (`*_summary_confidences_*.json`, `*_model_X.cif`)
-  - converts mmCIF → PDB (keeping pLDDT in B-factor)
-  - extracts site-wise PP from the IQ-TREE `.state` file
+  - converts mmCIF → PDB (keeping pLDDT in the B-factor field)
+  - extracts **site-wise** PP from the IQ-TREE `.state` file
+  - checks alignment length consistency against a **with-gap** FASTA
   - maps PP to B-factors (per residue) using `map_confidence_to_bfactor.py`
   - generates additional PDB files with **PP − pLDDT (scaled)** and **PP × pLDDT**
   - computes CA-only statistics and writes a log file
@@ -21,14 +23,12 @@ The with-gap FASTA can represent either raw ASR sequences or indel-aware correct
 - `map_confidence_to_bfactor.py`  
   Python script (using `gemmi`) that:
   - reads an AlphaFold mmCIF file
-  - reads an aligned ASR sequence (with gaps)
+  - reads an aligned ASR sequence (with gaps) for the node of interest
   - reads per-site PP values
   - maps PP and/or pLDDT to per-residue B-factors, handling gaps explicitly
 
 - `extract_bfactor_from_pdb.py`  
-  Auxiliary utility that extracts B-factor values from one or more PDB files.
-  By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values.
-  This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
+  Auxiliary utility that extracts B-factor values from one or more PDB files. By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values. This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
 
 ---
 
@@ -37,7 +37,7 @@ The with-gap FASTA can represent either raw ASR sequences or indel-aware correct
 ### Runtime
 
 - Bash (tested with `bash`)
-- Python 3.x
+- Python `>=3.10,<3.13`
 - Python libraries:
   - `gemmi` (mmCIF parsing and PDB output)
   - `biopython` (`Bio.PDB` module for simple PDB manipulation)
@@ -50,8 +50,15 @@ The with-gap FASTA can represent either raw ASR sequences or indel-aware correct
 
 - **IQ-TREE** ASR:
   - `.state` file with site-wise posterior probabilities (e.g., `ASR_QpfamR7_PSI_TM_Coffee.state`)
-  - **indel-aware alignment** with gaps, where the internal node of interest appears as a FASTA entry  
-    (e.g., `ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta`)
+  - **gap-containing ancestral FASTA** 
+A gap-containing ancestral FASTA in the same alignment-coordinate system as the IQ-TREE `.state` file. This may be either an indel-aware processed ancestral FASTA or a raw PAML ASR with-gap FASTA.
+
+  ```text
+  ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta
+  ```
+
+The with-gap FASTA must preserve the same alignment-column coordinate system as the alignment represented in theIQ-TREE `.state` file.
+
 - **AlphaFold** run for the ancestral sequence of a specific node (Node112, Anc-SzR, etc.), producing a directory like:
 
 ```text
@@ -66,7 +73,6 @@ The with-gap FASTA can represent either raw ASR sequences or indel-aware correct
     templates/
     terms_of_use.md
 ```
-  Filenames **may** contain the node label (e.g. `node112`); if so, those are preferred when choosing the best model.
 
 - `extract_bfactor_from_pdb.py` uses only the Python standard library.
 
@@ -82,8 +88,8 @@ The intended usage is:
 2. `run_confmap_iqtree.sh` is executed **inside that AlphaFold output directory**, using:
 
    * an IQ-TREE `.state` file
-   * an indel-aware alignment FASTA file
-   * the node ID (e.g., `Node112`)
+   * a with-gap alignment FASTA file
+   * the IQ-TREE node ID (e.g., `Node112`)
 
 3. The script creates a subdirectory (by default `confmap/`) and writes all derived PDBs and a log file there.
 
@@ -108,6 +114,8 @@ Node112/
     Node112_bfactor_values.tsv  (optional, generated by extract_bfactor_from_pdb.py)
 ```
 
+Here, `Node112` is a label constructed from the IQ-TREE node ID and is used consistently for ConsistASR output filenames. The user-defined AlphaFold Server job name is independent of the PAML node label.
+
 ---
 
 ## 4. Inputs
@@ -122,7 +130,7 @@ Node112/
   ```
 
 * `--withgap <WITHGAP_FASTA>`
-  Aligned FASTA containing the node of interest as a header.
+  With-gap ASR alignment FASTA containing the node of interest as a header.
 
   This can be either:
 
@@ -142,16 +150,18 @@ Node112/
 From the AlphaFold run for the ancestral sequence of the node:
 
 * `*_summary_confidences_*.json`
-  (optionally containing the node id in the filename, e.g. `_node112_`)
-* `*_model_X.cif` (corresponding mmCIF models)
+
+* `*_model_X.cif` (corresponding AlphaFold models in mmCIF format)
 
 The script automatically:
 
-1. Collects all `*_summary_confidences_*.json`
-2. Prefers those whose filename contains the node id (case-insensitive)
-3. Among the remaining candidates, selects the one with the highest `ranking_score` (if present) or `plddt`
-4. Extracts the model index `X` from the filename suffix `_summary_confidences_X.json`
-5. Uses the corresponding `*_model_X.cif` as the best AlphaFold model
+1. Collects all `*_summary_confidences_*.json` files in the current directory.
+2. Confirms that they belong to a single AlphaFold Server output prefix.
+3. Checks for the corresponding `*_model_X.cif` file for each summary JSON.
+4. Among valid JSON/CIF pairs, selects the model with the highest `ranking_score` (or `plddt` if `ranking_score` is unavailable).
+5. Verifies downstream that the structure sequence exactly matches the gap-stripped ancestral sequence specified by `--withgap`.
+
+The user-defined AlphaFold Server job name is not used to identify the ancestral node, because AlphaFold Server output filenames reflect arbitrary user-assigned job names.
 
 ---
 
@@ -165,16 +175,16 @@ cd Node112/
 bash /path/to/run_confmap_iqtree.sh \
   --state /path/to/ASR_QpfamR7_PSI_TM_Coffee.state \
   --node  Node112 \
-  --withgap   /path/to/ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta \
+  --withgap  /path/to/ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta \
   --outdir confmap
 ```
 
 Arguments:
 
-* `--state` : path to IQ-TREE `.state` file
-* `--node`  : node ID (must match the FASTA header in `--withgap`)
-* `--withgap`   : aligned FASTA (`with gaps`) containing that node sequence
-* `--outdir`: output directory for confmap results (default: `confmap`)
+* `--state`   : path to IQ-TREE `.state` file
+* `--node`    : node ID (must match the FASTA header in `--withgap`)
+* `--withgap` : with-gap alignment FASTA containing that node sequence
+* `--outdir`  : output directory for confmap results (default: `confmap`)
 
 Help:
 
@@ -194,50 +204,53 @@ The example above uses an indel-aware FASTA file. To map confidence values onto 
 
 Within `--outdir` (default `confmap/`), the script writes:
 
-* `NODE_plddt_bfactor.pdb`
+* `Node112_plddt_bfactor.pdb`
 
   * PDB converted from the selected AlphaFold `.cif`
   * B-factors = original pLDDT values by AlphaFold
 
-* `NODE_pp_bfactor.pdb`
+* `Node112_pp_bfactor.pdb`
 
   * PDB where B-factors = ASR posterior probability (PP) per residue
-  * PP is automatically scaled:
+  * PP is automatically scaled in `map_confidence_to_bfactor.py`:
 
     * if max(PP) ≤ 1.0, treat as 0–1 and scale to 0–100
     * otherwise assume already in 0–100
 
-* `NODE_ppminusplddt_bfactor.pdb`
+* `Node112_ppminusplddt_bfactor.pdb`
 
   * B-factor encodes **scaled (PP − pLDDT)**:
 
     * raw difference is `diff = PP − pLDDT` (range approx −100 to +100)
     * then linearly scaled to `[0, 100]` via `(diff + 100)/200 × 100`
 
-* `NODE_ppxplddt_bfactor.pdb`
+* `Node112_ppxplddt_bfactor.pdb`
 
   * B-factor encodes **PP × pLDDT / 100**, i.e. a simple product metric:
 
     * PP and pLDDT are treated as 0–100 values
     * product is `(PP * pLDDT) / 100`, constrained to 0–100
 
-* `NODE_aligned_indel.fasta`
+* `Node112_aligned_withgap.fasta`
 
   * the extracted aligned sequence for this node (one entry, with gaps)
+  * taken directly from `--withgap` FASTA (header `>Node112`)
 
-* `NODE_pp_values.txt`
+* `Node112_pp_values.txt`
 
   * site-wise PP values (one per alignment column) extracted from `.state`, **after taking the maximum over states per site** for the node
 
-* `NODE_conf_CA_stats.log`
+* `Node112_conf_CA_stats.log`
 
-  * CA-only statistics for each metric:
+  * summary statistics containing:
 
-    * PP_sitewise (from `.state`)
-    * pLDDT_CA (from `NODE_plddt_bfactor.pdb`)
-    * PP_CA (from `NODE_pp_bfactor.pdb`)
-    * PP−pLDDT_CA (from `NODE_ppminusplddt_bfactor.pdb`)
-    * PP×pLDDT_CA (from `NODE_ppxplddt_bfactor.pdb`)
+    * `PP_sitewise_0to100` — all alignment columns in the IQ-TREE output
+    * `pLDDT_CA` — retained structure residues represented by CA atoms
+    * `PP_CA`
+    * `PP-PLDDT_CA`
+    * `PPxPLDDT_CA`
+
+  * `PP_sitewise_0to100` and the CA-based metrics may contain different numbers of positions because alignment columns corresponding to gaps are not represented as structure residues.
 
 ---
 
@@ -287,34 +300,39 @@ Useful options:
 
 ## 8. Notes on the metrics
 
+The PDB B-factor field is used here as a convenient container for visualization; these values are not experimental crystallographic B-factors.
+
 * **PP (posterior probability)**
 
   * Derived from IQ-TREE `.state`
-  * For each site, the maximum posterior probability over all states is used
-  * Typically represents the confidence in the reconstructed amino acid at that site
+    - for each site, PAML lists best states and their posterior probabilities for all nodes
+    - the script extracts the probability corresponding to the chosen node ID
+  * Typically represents the confidence in the ancestral residue at that site for this particular node
 
 * **pLDDT (AlphaFold)**
 
   * Original per-residue confidence from AlphaFold (0–100)
-  * Stored in the B-factor field of the original PDB
+  * Stored in the B-factor field of the original PDB converted from the mmCIF
 
 * **PP×pLDDT**
 
   * Heuristic combined metric: high only if both ASR PP and pLDDT are high
-  * Useful to identify residues with robust support from both evolutionary and structural perspectives
+  * Useful for identifying residues supported both by evolutionary reconstruction and by the AlphaFold model
 
 * **PP−pLDDT (scaled)**
 
   * Highlights disagreement between ASR confidence and AlphaFold confidence
-  * After centering (−100..100), values are scaled to 0–100 solely for visualization convenience
+  * The raw difference ranges approximately from −100 to +100 and is linearly rescaled to 0–100 for visualization convenience.
 
-These metrics are primarily intended for **qualitative visualization** (PyMOL, ChimeraX, etc.) and for simple region-wise averages (e.g. TM vs loop).
+PP×pLDDT and scaled PP−pLDDT are heuristic visualization and summary metrics. They should not be interpreted as calibrated probabilities, formal statistical confidence measures, or combinations of statistically independent quantities.
+
+These metrics are primarily intended for **qualitative visualization** (PyMOL, ChimeraX, etc.) and simple region-wise summaries (e.g., transmembrane vs extramembrane).
 
 ---
 
 ## 9. Visualization tips (optional)
 
-Example: coloring by B-factor in PyMOL for `NODE_ppxplddt_bfactor.pdb`:
+Example: coloring by B-factor in PyMOL for `Node112_ppxplddt_bfactor.pdb`:
 
 ```pymol
 load Node112_ppxplddt_bfactor.pdb, pp_plddt
@@ -329,6 +347,12 @@ color byattribute bfactor
 ```
 
 Color schemes can be tuned to highlight high-confidence transmembrane segments versus low-confidence loops, etc.
+
+You can apply similar commands to:
+
+- `Node112_plddt_bfactor.pdb` (pLDDT only)
+- `Node112_pp_bfactor.pdb` (PP only)
+- `Node112_ppminusplddt_bfactor.pdb` (scaled PP − pLDDT)
 
 ---
 
@@ -360,10 +384,21 @@ Color schemes can be tuned to highlight high-confidence transmembrane segments v
     pip install gemmi biopython
     ```
 
-* **`[WARN] No matching ATOM records found` when using `extract_bfactor_from_pdb.py`**
+* **`[ERROR] No matching ATOM records found` when using `extract_bfactor_from_pdb.py`**
 
   * Check that the input file is a PDB file, not mmCIF.
   * Confirm that the requested atom exists, e.g. `--atom CA`.
   * If using `--chain`, confirm that the chain ID matches the PDB file.
-  
+
+* **`[ERROR] AlphaFold structure sequence does not exactly match the
+  ungapped ancestral sequence`**
+
+  * Confirm that the AlphaFold model was generated from the same ancestral sequence represented by the selected `--withgap` entry.
+  * Equal sequence lengths alone are insufficient; the amino-acid sequences must match exactly.
+
+* **`[ERROR] Multiple AlphaFold output prefixes were found`**
+
+  * Run the wrapper in a directory containing outputs from only one AlphaFold Server job.
+  * The AlphaFold job name is user-defined and is not used to infer the IQ-TREE node identity.
+
 ---

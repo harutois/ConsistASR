@@ -2,8 +2,9 @@
 
 This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **PAML `rst` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
 
-The workflow is designed for **PAML-based ASR on with-gap ancestral alignments**, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
-The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware corrected sequences, as long as it matches the sequence used for AlphaFold prediction.
+The workflow is designed for **PAML-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment represented in the PAML `rst` file, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
+
+The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware processed sequences, provided that it preserves the same alignment-column coordinates as the PAML `rst` output and that its gap-stripped sequence matches the sequence used for AlphaFold prediction.
 
 ---
 
@@ -22,22 +23,22 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
 - `extract_pp_from_paml_rst.py`  
   Python script that:
   - reads a PAML `rst` file
-  - determines the internal node order from `node #N` lines
-  - extracts the PP value for the specified node **for each alignment column** from the “site / Freq / Data” block
-  - optionally checks length consistency against a with-gap FASTA  
-  - writes one PP value per line (alignment column)
+  - determines the ancestral-node order from the PAML declaratio `Nodes N to M are ancestral`
+  - cross-checks this order against reconstructed `node #N` sequence lines when present
+  - extracts the PP value for the specified node for each alignment column from the `site / Freq / Data` block
+  - verifies that each site contains the expected number of node probabilities
+  - optionally checks alignment-column consistency against a with-gap FASTA
+  - writes one PP value per alignment column
 
 - `map_confidence_to_bfactor.py`  
-  Python script (using `gemmi` and `Bio.PDB`) that:
+  Python script (using `gemmi`) that:
   - reads an AlphaFold mmCIF file
   - reads an aligned ASR sequence (with gaps) for the node of interest
-  - reads per-site confidence values (PP)
+  - reads per-site PP values
   - maps PP and/or pLDDT to per-residue B-factors, handling gaps explicitly
-
+  
 - `extract_bfactor_from_pdb.py`  
-  Auxiliary utility that extracts B-factor values from one or more PDB files.
-  By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values.
-  This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
+  Auxiliary utility that extracts B-factor values from one or more PDB files. By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values. This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
 
 ---
 
@@ -46,7 +47,7 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
 ### Runtime
 
 - Bash (tested with `bash`)
-- Python 3.x
+- Python `>=3.10,<3.13`
 - Python libraries:
   - `gemmi` (mmCIF parsing and PDB output)
   - `biopython` (`Bio.PDB` module for simple PDB manipulation)
@@ -58,20 +59,15 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
 ### Upstream (assumed already done)
 
 - **PAML ASR** (`codeml` or related program), producing:
-  - a PAML `rst` file that contains a **marginal reconstruction of ancestral sequences** with per-site posterior probabilities, e.g.:
-
-    ```text
-    HeR_SzR_228_FFT_NS_1.rst
-    ```
-
-- **Indel-aware alignment**  
-  An alignment including all extant and ancestral sequences, where each **PAML internal node ID** appears as a FASTA header (e.g., `>233`):
+  - a PAML `rst` file that contains a **marginal reconstruction of ancestral sequences** with per-site posterior probabilities (e.g., `HeR_SzR_228_FFT_NS_1.rst`)
+  - **gap-containing ancestral FASTA**
+A gap-containing ancestral FASTA in which each PAML internal-node ID appears as an exact FASTA header (e.g. `>233`). This may be either an indel-aware processed ancestral FASTA or a raw PAML ASR with-gap FASTA.
 
   ```text
   ASR_LGFG4_FFT_NS_1_indel_withgap.fasta
   ```
 
-  The alignment should be the same logical alignment used to generate the PAML `rst` file (possibly after mapping from an upstream RAxML pipeline).
+The with-gap FASTA must preserve the same alignment-column coordinate system as the alignment represented in the PAML `rst` file.
 
 - **AlphaFold** run for the ancestral sequence of a specific node (Node233, Anc-SzR, etc.), producing a directory like:
 
@@ -87,8 +83,6 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware co
     templates/
     terms_of_use.md
   ```
-
-  Filenames **may** contain the node label (e.g. `node233`); if so, those are preferred when choosing the best model.
 
 - `extract_bfactor_from_pdb.py` uses only the Python standard library.
 
@@ -124,13 +118,13 @@ Node233/
     Node233_pp_bfactor.pdb
     Node233_ppminusplddt_bfactor.pdb
     Node233_ppxplddt_bfactor.pdb
-    Node233_aligned_indel.fasta
+    Node233_aligned_withgap.fasta
     Node233_pp_values.txt
     Node233_conf_CA_stats.log
     Node233_bfactor_values.tsv  (optional, generated by extract_bfactor_from_pdb.py)
 ```
 
-Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used consistently for output filenames and AlphaFold model selection.
+Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used consistently for ConsistASR output filenames. The user-defined AlphaFold Server job name is independent of the PAML node label.
 
 ---
 
@@ -168,9 +162,12 @@ Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used
   --node 233
   ```
 
-  This node ID must:
-  - appear in the RST file as `node #233`
-  - correspond to a header `>233` in the with-gap alignment FASTA
+ This node ID must:
+
+ - fall within the ancestral-node range declared in the RST file (e.g. `Nodes 19 to 35 are ancestral`)
+ - correspond to an exact header `>233` in the with-gap ancestral FASTA
+
+  When reconstructed `node #N` sequence lines are present in the RST file, the helper script also verifies that their order agrees with the declared ancestral-node range.
 
 * `--withgap <WITHGAP_FASTA>`  
   With-gap ASR alignment FASTA containing the **PAML node ID as a header**.
@@ -178,39 +175,34 @@ Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used
   This can be either:
 
   * an indel-aware with-gap FASTA file, e.g.  
-    `ASR_LGFG4_FFT_NS_1_indel_withgap.fasta`
+    `<prefix>_indel_withgap.fasta`
 
   * a raw ASR with-gap FASTA file, e.g.  
-    `ASR_LGFG4_FFT_NS_1_raw_asr_withgap.fasta`
+    `<prefix>_raw_asr_withgap.fasta`
 
   Use the with-gap FASTA that corresponds to the gap-stripped sequence used for AlphaFold prediction.
-  For example, if AlphaFold was run using `ASR_LGFG4_FFT_NS_1_raw_asr_nogap.fasta`, use `ASR_LGFG4_FFT_NS_1_raw_asr_withgap.fasta` here.
+  For example, if AlphaFold was run using `<prefix>_raw_asr_nogap.fasta`, use `<prefix>_raw_asr_withgap.fasta` here.
 
-  The script expects an exact header:
+  The script expects an exact header `>${NODE}` (e.g., `>233`).
 
-  ```text
-  >233
-  ```
-
-  and extracts that single sequence to `Node233_aligned_indel.fasta`.
 
 ### 4.2 AlphaFold outputs
 
 From the AlphaFold run for the ancestral sequence of the node:
 
 * `*_summary_confidences_*.json`  
-  (optionally containing the node label, e.g. `_node233_`)
 
-* `*_model_X.cif`  
-  (corresponding AlphaFold models in mmCIF format)
+* `*_model_X.cif` (corresponding AlphaFold models in mmCIF format)
 
 The script automatically:
 
-1. Collects all `*_summary_confidences_*.json`
-2. Prefers those whose filename contains the node label (e.g. `node233`, case-insensitive)
-3. Among the candidates, selects the one with the highest `ranking_score` (if present) or `plddt`
-4. Extracts the model index `X` from `_summary_confidences_X.json`
-5. Uses the corresponding `*_model_X.cif` as the best AlphaFold model
+1. Collects all `*_summary_confidences_*.json` files in the current directory.
+2. Confirms that they belong to a single AlphaFold Server output prefix.
+3. Checks for the corresponding `*_model_X.cif` file for each summary JSON.
+4. Among valid JSON/CIF pairs, selects the model with the highest `ranking_score` (or `plddt` if `ranking_score` is unavailable).
+5. Verifies downstream that the selected structure sequence exactly matches the gap-stripped ancestral sequence specified by `--withgap`.
+
+The user-defined AlphaFold Server job name is not used to identify the ancestral node, because AlphaFold Server output filenames reflect arbitrary user-assigned job names.
 
 ---
 
@@ -225,7 +217,7 @@ bash /path/to/run_confmap_paml.sh \
   --rst     /path/to/HeR_SzR_228_FFT_NS_1.rst \
   --node    233 \
   --withgap /path/to/ASR_LGFG4_FFT_NS_1_indel_withgap.fasta \
-  --outdir  confmap_233
+  --outdir  confmap
 ```
 
 Arguments:
@@ -241,8 +233,7 @@ Help:
 bash run_confmap_paml.sh --help
 ```
 
-The example above uses an indel-aware FASTA file.  
-To map confidence values onto a structure predicted from a raw PAML ASR sequence, replace `--withgap` with the corresponding raw with-gap FASTA file:
+The example above uses an indel-aware FASTA file. To map confidence values onto a structure predicted from a raw ASR sequence, replace `--withgap` with the corresponding raw with-gap FASTA file, for example:
 
 ```bash
 --withgap /path/to/ASR_LGFG4_FFT_NS_1_raw_asr_withgap.fasta
@@ -281,28 +272,31 @@ Within `--outdir` (default `confmap/`), the script writes:
     * PP and pLDDT are treated as 0–100 values
     * product is `(PP * pLDDT) / 100`, constrained to 0–100
 
-* `Node233_aligned_indel.fasta`
+* `Node233_aligned_withgap.fasta`
 
   * the extracted aligned sequence for this node (one entry, with gaps)
   * taken directly from `--withgap` FASTA (header `>233`)
-  * despite the filename, this may come from either an indel-aware with-gap FASTA or a raw ASR with-gap FASTA, depending on the input passed to `--withgap`
 
 * `Node233_pp_values.txt`
 
   * site-wise PP values (one per alignment column) extracted from the PAML `rst`:
 
-    * for each site line, the script takes the PP corresponding to the PAML node index (based on the `node #N` order)
-    * no additional aggregation over states is done; values are directly the posterior probability for that node at each column
+    * the ancestral-node order is derived from the PAML declaration `Nodes N to M are ancestral`
+    * for each site, the script verifies that the number of posterior probabilities matches the number of ancestral nodes
+    * the PP corresponding to the requested node is then extracted
+    * no additional aggregation over states is performed
 
 * `Node233_conf_CA_stats.log`
 
-  * CA-only statistics for each metric:
+  * summary statistics containing:
 
-    * `PP_sitewise`      (from `Node233_pp_values.txt`)
-    * `pLDDT_CA`         (from `Node233_plddt_bfactor.pdb`)
-    * `PP_CA`            (from `Node233_pp_bfactor.pdb`)
-    * `PP-PLDDT_CA`      (from `Node233_ppminusplddt_bfactor.pdb`)
-    * `PPxPLDDT_CA`      (from `Node233_ppxplddt_bfactor.pdb`)
+    * `PP_sitewise_0to100` — all alignment columns in the PAML site-wise output
+    * `pLDDT_CA` — retained structure residues represented by CA atoms
+    * `PP_CA`
+    * `PP-PLDDT_CA`
+    * `PPxPLDDT_CA`
+
+  * `PP_sitewise_0to100` and the CA-based metrics may contain different numbers of positions because alignment columns corresponding to gaps are not represented as structure residues.
 
 ---
 
@@ -352,6 +346,8 @@ Useful options:
 
 ## 8. Notes on the metrics
 
+The PDB B-factor field is used here as a convenient container for visualization; these values are not experimental crystallographic B-factors.
+
 * **PP (posterior probability)**
 
   * Derived from PAML `rst`:
@@ -372,7 +368,9 @@ Useful options:
 * **PP−pLDDT (scaled)**
 
   * Highlights disagreement or imbalance between ASR confidence and AlphaFold confidence
-  * After centering (−100..100), values are scaled to 0–100 purely for visualization convenience
+  * The raw difference ranges approximately from −100 to +100 and is linearly rescaled to 0–100 for visualization convenience.
+
+PP×pLDDT and scaled PP−pLDDT are heuristic visualization and summary metrics. They should not be interpreted as calibrated probabilities, formal statistical confidence measures, or combinations of statistically independent quantities.
 
 These metrics are primarily intended for **qualitative visualization** (PyMOL, ChimeraX, etc.) and simple region-wise summaries (e.g., transmembrane vs extramembrane).
 
@@ -394,6 +392,8 @@ open Node233_ppxplddt_bfactor.pdb
 color byattribute bfactor
 ```
 
+Color schemes can be tuned to highlight high-confidence transmembrane segments versus low-confidence loops, etc.
+
 You can apply similar commands to:
 
 - `Node233_plddt_bfactor.pdb` (pLDDT only)
@@ -409,7 +409,7 @@ You can apply similar commands to:
   * Make sure you are running the script **inside** the AlphaFold output directory for the node (e.g., `Node233/`).
   * Check that AlphaFold completed successfully and produced `*_summary_confidences_*.json`.
 
-* **`[ERROR] >PAML_NODE not found in WITHGAP_FASTA (exact header match).`**
+* **`[ERROR] Exact FASTA header >PAML_NODE not found ...`**
 
   * Confirm that your with-gap alignment FASTA contains a header exactly equal to `>233` (no extra spaces or suffixes).
   * The script does an exact string match on the header line.
@@ -419,18 +419,11 @@ You can apply similar commands to:
   * Check that the requested `--node` (e.g., `233`) appears as `node #233` in the `rst` file.
   * If you changed node numbering between RAxML and PAML, ensure you are using the PAML node ID.
 
-* **Length mismatch warnings**
+* **`[ERROR] PAML PP length (...) != with-gap alignment length (...)`**
 
-  * If you see:
-
-    ```text
-    [WARN] PAML PP length (...) and with-gap alignment length (...) differ. Truncating to the shorter length.
-    ```
-
-    then:
-
-    - confirm that the alignment used for PAML and the with-gap FASTA are consistent
-    - check for trimmed regions or additional positions (e.g., masked columns) in one but not the other
+  * The PAML `rst` output and the with-gap ancestral FASTA do not use the same alignment-column coordinate system.
+  * Confirm that the FASTA corresponds to the same alignment used for the PAML reconstruction.
+  * Do not trim or truncate either input to force the lengths to match.
 
 * **Biopython / gemmi import errors**
 
@@ -440,14 +433,28 @@ You can apply similar commands to:
     pip install gemmi biopython
     ```
 
-* **`[WARN] No matching ATOM records found` when using `extract_bfactor_from_pdb.py`**
+* **`[ERROR] No matching ATOM records found` when using `extract_bfactor_from_pdb.py`**
 
   * Check that the input file is a PDB file, not mmCIF.
   * Confirm that the requested atom exists, e.g. `--atom CA`.
   * If using `--chain`, confirm that the chain ID matches the PDB file.
 
----
+* **`[ERROR] Unexpected number of node probabilities at site ...`**
 
-This PAML-based pipeline is intended to be fully parallel to the IQ-TREE-based version, differing only in how the site-wise PP values are extracted (from `rst` instead of `.state`).
+  * The marginal-reconstruction site row does not contain the expected
+    number of posterior probabilities.
+  * Confirm that the `rst` file is complete and unmodified.
+  * The script stops rather than substituting a placeholder value.
+
+* **`[ERROR] AlphaFold structure sequence does not exactly match the
+  ungapped ancestral sequence`**
+
+  * Confirm that the AlphaFold model was generated from the same ancestral sequence represented by the selected `--withgap` entry.
+  * Equal sequence lengths alone are insufficient; the amino-acid sequences must match exactly.
+
+* **`[ERROR] Multiple AlphaFold output prefixes were found`**
+
+  * Run the wrapper in a directory containing outputs from only one AlphaFold Server job.
+  * The AlphaFold job name is user-defined and is not used to infer the PAML node identity.
 
 ---

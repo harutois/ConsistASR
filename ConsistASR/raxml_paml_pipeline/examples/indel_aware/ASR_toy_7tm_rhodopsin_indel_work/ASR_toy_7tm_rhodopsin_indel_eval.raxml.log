@@ -7,9 +7,9 @@ Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!
 
 System: Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz, 2 cores, 16 GB RAM
 
-RAxML-NG was called at 16-Jun-2026 15:52:56 as follows:
+RAxML-NG was called at 28-Sep-2026 15:10:59 as follows:
 
-raxml-ng --evaluate --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model BIN+G --tree toy_7tm_rhodopsin.raxml.bestTree --prefix ASR_toy_7tm_rhodopsin_indel_eval --outgroup OG_WP_285271495,OG_WP_136361479 --seed 12345
+raxml-ng --evaluate --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model BIN+G --tree ASR_toy_7tm_rhodopsin_indel_work/input_tree.lf.nwk --prefix ASR_toy_7tm_rhodopsin_indel_eval --outgroup OG_WP_285271495,OG_WP_136361479 --seed 12345
 
 Analysis options:
   run mode: Evaluate tree likelihood
@@ -34,7 +34,7 @@ WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical!
 WARNING: Duplicate sequences found: 3
 
 NOTE: Reduced alignment (with duplicates and gap-only sites/taxa removed) 
-NOTE: was saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
+NOTE: was saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
 
 Alignment comprises 1 partitions and 44 patterns
 
@@ -49,7 +49,7 @@ NOTE: Binary MSA file created: ASR_toy_7tm_rhodopsin_indel_eval.raxml.rba
 
 Parallelization scheme autoconfig: 1 worker(s) x 1 thread(s)
 
-[00:00:00] Loading user starting tree(s) from: toy_7tm_rhodopsin.raxml.bestTree
+[00:00:00] Loading user starting tree(s) from: ASR_toy_7tm_rhodopsin_indel_work/input_tree.lf.nwk
 Parallel reduction/worker buffer size: 1 KB  / 0 KB
 
 [00:00:00] Data distribution: max. partitions/sites/weight per thread: 1 / 44 / 352
@@ -57,36 +57,36 @@ Parallel reduction/worker buffer size: 1 KB  / 0 KB
 
 Evaluating 1 trees
 
-[00:00:00] Tree #1, initial LogLikelihood: -1925.216992
+[00:00:00] Tree #1, initial LogLikelihood: -1924.803945
 
-[00:00:00 -1925.216992] Initial branch length optimization
-[00:00:00 -1143.277706] Model parameter optimization (eps = 0.100000)
+[00:00:00 -1924.803945] Initial branch length optimization
+[00:00:00 -1142.635699] Model parameter optimization (eps = 0.100000)
 
-[00:00:00] Tree #1, final logLikelihood: -1052.481797
+[00:00:00] Tree #1, final logLikelihood: -1052.481946
 
 
 Optimized model parameters:
 
    Partition 0: noname
-   Rate heterogeneity: GAMMA (4 cats, mean),  alpha: 2.235361 (ML),  weights&rates: (0.250000,0.319839) (0.250000,0.677915) (0.250000,1.074900) (0.250000,1.927346) 
-   Base frequencies (ML): 0.213144 0.786856 
+   Rate heterogeneity: GAMMA (4 cats, mean),  alpha: 2.242328 (ML),  weights&rates: (0.250000,0.320581) (0.250000,0.678534) (0.250000,1.075019) (0.250000,1.925866) 
+   Base frequencies (ML): 0.213150 0.786850 
    Substitution rates (ML): 1.000000 
 
 
-Final LogLikelihood: -1052.481797
+Final LogLikelihood: -1052.481946
 
-AIC score: 2174.963594 / AICc score: 2183.172063 / BIC score: 2309.284160
+AIC score: 2174.963891 / AICc score: 2183.172360 / BIC score: 2309.284457
 Free parameters (model + branch lengths): 35
 
 WARNING: Best ML tree contains 6 near-zero branches!
 
-Best ML tree with collapsed near-zero branches saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
-Best ML tree saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
-Optimized model saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
+Best ML tree with collapsed near-zero branches saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
+Best ML tree saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
+Optimized model saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
 
-Execution log saved to: /Users/haruto/Desktop/temp/ConsistASR_local/test/v110/PAML_ASR/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
+Execution log saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
 
-Analysis started: 16-Jun-2026 15:52:56 / finished: 16-Jun-2026 15:52:56
+Analysis started: 28-Sep-2026 15:10:59 / finished: 28-Sep-2026 15:10:59
 
-Elapsed time: 0.038 seconds
+Elapsed time: 0.049 seconds
 
