@@ -1,5 +1,5 @@
 
-seqfile = ../toy_7tm_rhodopsin.fasta
+seqfile = ../../toy_7tm_rhodopsin.fasta
 treefile = ASR_toy_7tm_rhodopsin.paml_tree.nwk
 outfile = ASR_toy_7tm_rhodopsin.out
 

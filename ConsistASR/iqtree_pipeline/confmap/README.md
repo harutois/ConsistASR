@@ -2,7 +2,7 @@
 
 This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **IQ-TREE `.state` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
 
-The workflow is designed for **IQ-TREE-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment used to generate the IQ-TREE `.state` file, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
+The workflow is designed for **IQ-TREE-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment used to generate the IQ-TREE `.state` file, combined with **AlphaFold** predictions for selected ancestral nodes.
 
 The with-gap FASTA can represent either raw IQ-TREE ASR sequences or indel-aware processed sequences, provided that it preserves the same alignment-column coordinates as the IQ-TREE `.state` file and that its gap-stripped sequence matches the sequence used for **AlphaFold** prediction.
 
@@ -10,25 +10,25 @@ The with-gap FASTA can represent either raw IQ-TREE ASR sequences or indel-aware
 
 ## 1. Files
 
+Scripts in this directory:
+
 - `run_confmap_iqtree.sh`  
-  Main wrapper script. For a given internal node:
+  Main wrapper script. For a given internal node, it:
   - finds the corresponding AlphaFold model (`*_summary_confidences_*.json`, `*_model_X.cif`)
-  - converts mmCIF → PDB (keeping pLDDT in the B-factor field)
-  - extracts **site-wise** PP from the IQ-TREE `.state` file
-  - checks alignment length consistency against a **with-gap** FASTA
-  - maps PP to B-factors (per residue) using `map_confidence_to_bfactor.py`
-  - generates additional PDB files with **PP − pLDDT (scaled)** and **PP × pLDDT**
+  - converts mmCIF → PDB while retaining pLDDT in the B-factor field
+  - extracts site-wise posterior probabilities from the IQ-TREE `.state` file
+  - checks alignment-length and sequence consistency against a with-gap ancestral FASTA
+  - maps posterior probability to B-factors
+  - generates additional PDB files containing scaled PP − pLDDT and PP × pLDDT
   - computes CA-only statistics and writes a log file
 
+Shared helper scripts are located in `../../common/`:
+
 - `map_confidence_to_bfactor.py`  
-  Python script (using `gemmi`) that:
-  - reads an AlphaFold mmCIF file
-  - reads an aligned ASR sequence (with gaps) for the node of interest
-  - reads per-site PP values
-  - maps PP and/or pLDDT to per-residue B-factors, handling gaps explicitly
+  Reads an AlphaFold mmCIF file, a gap-containing ancestral sequence, and site-wise posterior probabilities, and maps PP and/or pLDDT to per-residue B-factors while handling alignment gaps explicitly.
 
 - `extract_bfactor_from_pdb.py`  
-  Auxiliary utility that extracts B-factor values from one or more PDB files. By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values. This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
+  Auxiliary utility that extracts B-factor values from one or more PDB files. By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values. This is useful for exporting PP, pLDDT, PP × pLDDT, or scaled PP − pLDDT values from generated PDB files.
 
 ---
 
@@ -37,7 +37,6 @@ The with-gap FASTA can represent either raw IQ-TREE ASR sequences or indel-aware
 ### Runtime
 
 - Bash (tested with `bash`)
-- Python `>=3.10,<3.13`
 - Python libraries:
   - `gemmi` (mmCIF parsing and PDB output)
   - `biopython` (`Bio.PDB` module for simple PDB manipulation)
@@ -46,12 +45,14 @@ The with-gap FASTA can represent either raw IQ-TREE ASR sequences or indel-aware
   - `gemmi` (command-line `gemmi convert`)
   - `pdb_fromcif`
 
+The reference ConsistASR environment currently uses Python `>=3.10,<3.13`.
+
 ### Upstream (assumed already done)
 
 - **IQ-TREE** ASR:
   - `.state` file with site-wise posterior probabilities (e.g., `ASR_QpfamR7_PSI_TM_Coffee.state`)
   - **gap-containing ancestral FASTA** 
-A gap-containing ancestral FASTA in the same alignment-coordinate system as the IQ-TREE `.state` file. This may be either an indel-aware processed ancestral FASTA or a raw PAML ASR with-gap FASTA.
+A gap-containing ancestral FASTA in the same alignment-coordinate system as the IQ-TREE `.state` file. This may be either an indel-aware processed ancestral FASTA or a raw IQ-TREE ASR with-gap FASTA.
 
   ```text
   ASR_QpfamR7_PSI_TM_Coffee_indel_withgap.fasta
@@ -74,7 +75,7 @@ The with-gap FASTA must preserve the same alignment-column coordinate system as 
     terms_of_use.md
 ```
 
-- `extract_bfactor_from_pdb.py` uses only the Python standard library.
+- `common/extract_bfactor_from_pdb.py` uses only the Python standard library.
 
 ---
 
@@ -114,7 +115,7 @@ Node112/
     Node112_bfactor_values.tsv  (optional, generated by extract_bfactor_from_pdb.py)
 ```
 
-Here, `Node112` is a label constructed from the IQ-TREE node ID and is used consistently for ConsistASR output filenames. The user-defined AlphaFold Server job name is independent of the PAML node label.
+Here, `Node112` is a label constructed from the IQ-TREE node ID and is used consistently for ConsistASR output filenames. The user-defined AlphaFold Server job name is independent of the IQ-TREE node label.
 
 ---
 
@@ -260,10 +261,11 @@ The generated PDB files store PP, pLDDT, PP × pLDDT, or scaled PP − pLDDT val
 To export these values as a TSV table, use:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node112_pp_bfactor.pdb \
   --out Node112_pp_bfactor.tsv
 ```
+Within the standard repository layout, `run_confmap_iqtree.sh `automatically uses the shared `common/map_confidence_to_bfactor.py` helper. A copy placed alongside the wrapper can also be used for a standalone distribution.
 
 By default, the script extracts CA atoms and writes:
 
@@ -272,7 +274,7 @@ By default, the script extracts CA atoms and writes:
 Multiple PDB files can be processed together:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node112_pp_bfactor.pdb Node112_plddt_bfactor.pdb Node112_ppxplddt_bfactor.pdb \
   --out Node112_bfactor_values.tsv
 ```
@@ -280,7 +282,7 @@ python3 /path/to/extract_bfactor_from_pdb.py \
 To write only B-factor values, one per line:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node112_pp_bfactor.pdb \
   --values-only > Node112_pp_bfactor_values.txt
 ```
@@ -304,10 +306,10 @@ The PDB B-factor field is used here as a convenient container for visualization;
 
 * **PP (posterior probability)**
 
-  * Derived from IQ-TREE `.state`
-    - for each site, PAML lists best states and their posterior probabilities for all nodes
-    - the script extracts the probability corresponding to the chosen node ID
-  * Typically represents the confidence in the ancestral residue at that site for this particular node
+  * Derived from the IQ-TREE `.state` file.
+  * For each ancestral node and alignment site, IQ-TREE reports posterior probabilities for the possible amino-acid states.
+  * The confmap workflow uses the posterior probability of the maximum-posterior amino-acid state at each site as the site-wise ASR confidence value.
+  * These values describe confidence in the reconstructed amino-acid state and are distinct from the binary residue-presence/residue-absence posterior probabilities produced by the indel-aware workflow.
 
 * **pLDDT (AlphaFold)**
 

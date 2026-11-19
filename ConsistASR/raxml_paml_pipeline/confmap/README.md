@@ -2,7 +2,7 @@
 
 This directory contains a small pipeline to map **ancestral sequence reconstruction (ASR)** posterior probabilities (PP) from **PAML `rst` files** onto **AlphaFold** models as B-factors, and to derive metrics such as **PP × pLDDT** and **PP − pLDDT** for structural visualization and analysis.
 
-The workflow is designed for **PAML-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment represented in the PAML `rst` file, combined with **AlphaFold monomer** predictions for selected ancestral nodes.
+The workflow is designed for **PAML-based ASR and gap-containing ancestral sequences** that preserve the same alignment-column coordinates as the alignment represented in the PAML `rst` file, combined with **AlphaFold** Server-style predictions for selected ancestral nodes.
 
 The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware processed sequences, provided that it preserves the same alignment-column coordinates as the PAML `rst` output and that its gap-stripped sequence matches the sequence used for AlphaFold prediction.
 
@@ -10,35 +10,36 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware pr
 
 ## 1. Files
 
+Scripts in this directory:
+
 - `run_confmap_paml.sh`  
-  Main wrapper script. For a given internal node (PAML node ID, integer):
+  Main wrapper script. For a given PAML internal node, it:
   - finds the corresponding AlphaFold model (`*_summary_confidences_*.json`, `*_model_X.cif`)
-  - converts mmCIF → PDB (keeping pLDDT in the B-factor field)
-  - extracts **per-alignment-column** PP values for that node from the PAML `rst` file
-  - checks alignment length consistency against a **with-gap** FASTA
-  - maps PP to B-factors (per residue) using `map_confidence_to_bfactor.py`
-  - generates additional PDB files with **PP − pLDDT (scaled)** and **PP × pLDDT**
+  - converts mmCIF → PDB while retaining pLDDT in the B-factor field
+  - extracts per-alignment-column posterior probabilities for the selected node from the PAML `rst` file
+  - checks alignment-length and sequence consistency against a with-gap ancestral FASTA
+  - maps posterior probability to B-factors
+  - generates additional PDB files containing scaled PP − pLDDT and PP × pLDDT
   - computes CA-only statistics and writes a log file
 
 - `extract_pp_from_paml_rst.py`  
-  Python script that:
+  PAML-specific helper that:
   - reads a PAML `rst` file
-  - determines the ancestral-node order from the PAML declaratio `Nodes N to M are ancestral`
+  - determines the ancestral-node order from the PAML declaration `Nodes N to M are ancestral`
   - cross-checks this order against reconstructed `node #N` sequence lines when present
-  - extracts the PP value for the specified node for each alignment column from the `site / Freq / Data` block
-  - verifies that each site contains the expected number of node probabilities
+  - extracts the posterior probability corresponding to the requested node from each alignment-column record
+  - verifies the expected number of ancestral-node probabilities
   - optionally checks alignment-column consistency against a with-gap FASTA
-  - writes one PP value per alignment column
+
+Shared helper scripts are located in `../../common/`:
 
 - `map_confidence_to_bfactor.py`  
-  Python script (using `gemmi`) that:
-  - reads an AlphaFold mmCIF file
-  - reads an aligned ASR sequence (with gaps) for the node of interest
-  - reads per-site PP values
-  - maps PP and/or pLDDT to per-residue B-factors, handling gaps explicitly
-  
+  Maps ASR posterior probabilities and AlphaFold pLDDT values to per-residue B-factors while handling alignment gaps explicitly.
+
 - `extract_bfactor_from_pdb.py`  
-  Auxiliary utility that extracts B-factor values from one or more PDB files. By default, it extracts CA atoms and writes a TSV table containing residue metadata and B-factor values. This is useful for exporting PP, pLDDT, PP × pLDDT, or PP − pLDDT values from the generated PDB files.
+  Extracts B-factor values from generated PDB files for export as TSV or plain values.
+
+Within the standard repository layout, `run_confmap_paml.sh` automatically uses the shared `common/map_confidence_to_bfactor.py` helper. A copy placed alongside the wrapper can also be used for a standalone distribution.
 
 ---
 
@@ -47,7 +48,6 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware pr
 ### Runtime
 
 - Bash (tested with `bash`)
-- Python `>=3.10,<3.13`
 - Python libraries:
   - `gemmi` (mmCIF parsing and PDB output)
   - `biopython` (`Bio.PDB` module for simple PDB manipulation)
@@ -55,6 +55,8 @@ The with-gap FASTA can represent either raw PAML ASR sequences or indel-aware pr
   - `phenix.cif_as_pdb`
   - `gemmi` (command-line `gemmi convert`)
   - `pdb_fromcif`
+
+The reference ConsistASR environment uses Python `>=3.10,<3.13`.
 
 ### Upstream (assumed already done)
 
@@ -184,6 +186,8 @@ Here, `Node233` is a label constructed from the PAML node ID (`233`) and is used
   For example, if AlphaFold was run using `<prefix>_raw_asr_nogap.fasta`, use `<prefix>_raw_asr_withgap.fasta` here.
 
   The script expects an exact header `>${NODE}` (e.g., `>233`).
+  
+ When an indel-aware FASTA is used, only non-root PAML nodes included in the indel-aware reconstruction are available. The explicit PAML root can be used only with the corresponding raw PAML ASR sequence.
 
 
 ### 4.2 AlphaFold outputs
@@ -306,7 +310,7 @@ The generated PDB files store PP, pLDDT, PP × pLDDT, or scaled PP − pLDDT val
 To export these values as a TSV table, use:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node233_pp_bfactor.pdb \
   --out Node233_pp_bfactor.tsv
 ```
@@ -318,7 +322,7 @@ By default, the script extracts CA atoms and writes:
 Multiple PDB files can be processed together:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node233_pp_bfactor.pdb Node233_plddt_bfactor.pdb Node233_ppxplddt_bfactor.pdb \
   --out Node233_bfactor_values.tsv
 ```
@@ -326,7 +330,7 @@ python3 /path/to/extract_bfactor_from_pdb.py \
 To write only B-factor values, one per line:
 
 ```bash
-python3 /path/to/extract_bfactor_from_pdb.py \
+python3 /path/to/ConsistASR/common/extract_bfactor_from_pdb.py \
   --in Node233_pp_bfactor.pdb \
   --values-only > Node233_pp_bfactor_values.txt
 ```
@@ -354,6 +358,8 @@ The PDB B-factor field is used here as a convenient container for visualization;
     - for each site, PAML lists best states and their posterior probabilities for all nodes
     - the script extracts the probability corresponding to the chosen node ID
   * Typically represents the confidence in the ancestral residue at that site for this particular node
+
+These PAML posterior probabilities describe confidence in the reconstructed amino-acid state and are distinct from the binary residue-presence/residue-absence posterior probabilities generated by the indel-aware workflow.
 
 * **pLDDT (AlphaFold)**
 

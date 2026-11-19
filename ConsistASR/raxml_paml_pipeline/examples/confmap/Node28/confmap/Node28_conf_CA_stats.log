@@ -1,6 +1,6 @@
 [INFO] Node Node28 confidence statistics
 PP_sitewise_0to100: mean=49.032, min=8.900, max=100.000, median=41.900, n=343
-pLDDT_CA:            mean=90.888, min=50.120, max=98.180, median=94.860, n=203
+pLDDT_CA:            mean=91.141, min=47.820, max=98.200, median=95.100, n=203
 PP_CA:               mean=65.617, min=15.400, max=100.000, median=64.000, n=203
-PP-PLDDT_CA:         mean=37.364, min=11.660, max=74.940, median=38.360, n=203
-PPxPLDDT_CA:         mean=60.276, min=9.180, max=98.050, median=56.890, n=203
+PP-PLDDT_CA:         mean=37.239, min=11.660, max=76.090, median=37.550, n=203
+PPxPLDDT_CA:         mean=60.492, min=8.660, max=98.150, median=57.200, n=203

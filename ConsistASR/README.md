@@ -5,11 +5,11 @@ ConsistASR is a transparent post-processing workflow for **indel-aware ancestral
 The repository provides:
 
 - An **IQ-TREE–based indel-aware pipeline** (`iqtree_pipeline/indel_aware`)
-- A corresponding **RAxML + PAML indel-aware pipeline** (`raxml_paml_pipeline/indel_aware`)
+- A corresponding **RAxML-NG + PAML indel-aware pipeline** (`raxml_paml_pipeline/indel_aware`)
 - **Confidence mapping (“confmap”)** scripts to embed ASR posterior probability (PP) and pLDDT into B-factors of AlphaFold models
 - **FASTA ID utilities** to sanitize headers before going through PHYLIP-style formats
 - A simple **pre-clustering / filtering script** to reduce very large FASTA sets before tree building
-- **Raw ASR FASTA extraction** IQ-TREE `.state` and PAML `rst` outputs, with optional indel-aware processing
+- **Raw ASR FASTA extraction** from IQ-TREE `.state` and PAML `rst` outputs, with optional indel-aware processing
 - **ESR proxy validation utilities** for checking whether known extant sequences can be reconstructed from phylogenetic context
 
 The design philosophy is:
@@ -23,67 +23,69 @@ The design philosophy is:
 ## Repository layout
 
 ```text
-ConsistASR
+repository root
 ├── README.md
+├── LICENSE
 ├── environment.yml
-├── fasta_id_tools
-│   ├── README.md
-│   ├── examples
-│   ├── fasta_rename_sequential.py
-│   ├── fasta_rename_uniprot.py
-│   ├── fasta_sanitize_id_underscore.py
-│   └── fasta_truncate_id_simple.py
-├── precluster_tools
-│   ├── README.md
-│   └── filter_cluster_generic.sh
-├── iqtree_pipeline
-│   ├── indel_aware
-│   │   ├── README.md
-│   │   ├── run_indel_aware_iqtree.sh
-│   │   ├── map_raxml_to_iqtree_nodes.py
-│   │   ├── msa_to_binary.py
-│   │   └── state_and_indel_to_fasta.py
-│   ├── confmap
-│   │   ├── README.md
-│   │   ├── run_confmap_iqtree.sh
-│   │   ├── extract_bfactor_from_pdb.py
-│   │   └── map_confidence_to_bfactor.py
-│   ├── examples
-│   │   ├── README.md
-│   │   ├── ASR/         # IQ-TREE ASR outputs for toy 7TM rhodopsin dataset
-│   │   ├── Tree/        # IQ-TREE tree search outputs
-│   │   ├── confmap/     # Example confmap outputs for Node10
-│   │   ├── indel_aware/ # Example indel-aware outputs for IQ-TREE pipeline
-│   │   └── toy_7tm_rhodopsin.fasta
-│   └── esr
-│       ├── README.md
-│       ├── make_esr_proxy.py
-│       ├── score_esr.py
-│       ├── score_esr_by_region.py
-│       └─ examples
-└── raxml_paml_pipeline
-    ├── indel_aware
+├── images/
+└── ConsistASR/
+    ├── README.md
+    ├── common
+    │   ├── extract_bfactor_from_pdb.py
+    │   ├── msa_to_binary.py
+    │   ├── raxmlng_binary_asr.py
+    │   └── map_confidence_to_bfactor.py
+    ├── fasta_id_tools
     │   ├── README.md
-    │   ├── run_indel_aware_paml.sh
-    │   ├── map_raxml_to_paml_nodes_from_rst.py
-    │   ├── msa_to_binary.py
-    │   └── paml_state_and_indel_to_fasta.py
-    ├── confmap
+    │   ├── examples
+    │   ├── fasta_rename_sequential.py
+    │   ├── fasta_rename_uniprot.py
+    │   ├── fasta_sanitize_id_underscore.py
+    │   └── fasta_truncate_id_simple.py
+    ├── precluster_tools
     │   ├── README.md
-    │   ├── run_confmap_paml.sh
-    │   ├── extract_bfactor_from_pdb.py
-    │   ├── extract_pp_from_paml_rst.py
-    │   └─ map_confidence_to_bfactor.py
-    └── examples
-        ├── README.md
-        ├── ASR/         # PAML ASR example (toy 7TM rhodopsin)
-        ├── Tree/        # RAxML tree example
-        ├── confmap/     # Example confmap outputs for Node28
-        ├── indel_aware/ # Example indel-aware outputs for RAxML + PAML pipeline
-        ├── run_paml_asr.py
-        └── toy_7tm_rhodopsin.fasta
-
+    │   └── filter_cluster_generic.sh
+    ├── iqtree_pipeline
+    │   ├── indel_aware
+    │   │   ├── README.md
+    │   │   ├── run_indel_aware_iqtree.sh
+    │   │   └── state_and_indel_to_fasta.py
+    │   ├── confmap
+    │   │   ├── README.md
+    │   │   └── run_confmap_iqtree.sh
+    │   ├── examples
+    │   │   ├── README.md
+    │   │   ├── ASR/         # IQ-TREE ASR outputs for toy 7TM rhodopsin dataset
+    │   │   ├── Tree/        # IQ-TREE tree search outputs
+    │   │   ├── confmap/     # Example confmap outputs for Node10
+    │   │   ├── indel_aware/ # Example indel-aware outputs for IQ-TREE pipeline
+    │   │   └── toy_7tm_rhodopsin.fasta
+    │   └── esr
+    │       ├── README.md
+    │       ├── make_esr_proxy.py
+    │       ├── score_esr.py
+    │       ├── score_esr_by_region.py
+    │       └─ examples
+    └── raxml_paml_pipeline
+        ├── indel_aware
+        │   ├── README.md
+        │   ├── run_indel_aware_paml.sh
+        │   ├── map_raxml_to_paml_nodes_from_rst.py
+        │   └── paml_state_and_indel_to_fasta.py
+        ├── confmap
+        │   ├── README.md
+        │   ├── run_confmap_paml.sh
+        │   └── extract_pp_from_paml_rst.py
+        └── examples
+            ├── README.md
+            ├── ASR/         # PAML ASR example (toy 7TM rhodopsin)
+            ├── Tree/        # RAxML tree example
+            ├── confmap/     # Example confmap outputs for Node28
+            ├── indel_aware/ # Example indel-aware outputs for RAxML + PAML pipeline
+            ├── run_paml_asr.py
+            └── toy_7tm_rhodopsin.fasta
 ```
+The IQ-TREE and PAML workflows use a common binary gap-state reconstruction framework, allowing indel-aware ancestral sequences obtained from different amino-acid ASR backends to be compared directly.
 
 Each subdirectory (`iqtree_pipeline/indel_aware`, `iqtree_pipeline/confmap`, `iqtree_pipeline/examples`, `raxml_paml_pipeline/indel_aware`, `raxml_paml_pipeline/confmap`,`raxml_paml_pipeline/examples`, `fasta_id_tools`, `precluster_tools`) has its own `README.md` describing the interface and usage in more detail.
 
@@ -98,14 +100,18 @@ We recommend using a dedicated conda/mamba environment.
 From the top-level `ConsistASR` directory:
 
 ```bash
+conda config --set channel_priority strict
 mamba env create -f environment.yml   # or: conda env create -f environment.yml
 conda activate ConsistASR
 ```
+The environment.yml file uses conda-forge and bioconda only
+(nodefaults) and provides the recommended software versions for
+reproducing the ConsistASR workflows.
 
 This installs:
 
 * Python (`>=3.10,<3.13`)
-* IQ-TREE, RAxML-HPC, RAxML-NG, PAML, MAFFT, FastTree
+* IQ-TREE, RAxML-NG, PAML, MAFFT, FastTree
 * seqkit, CD-HIT
 * Biopython, gemmi, ETE3
 * basic scientific Python stack (numpy, pandas)
@@ -113,12 +119,34 @@ This installs:
 Alternatively, all of the above can be installed on Conda (Bioconda + Conda Forge), e.g.:
 
 ```bash
-conda create -n ConsistASR -c conda-forge -c bioconda \
+conda create -n ConsistASR \
+  -c conda-forge -c bioconda \
   "python>=3.10,<3.13" \
-  iqtree raxml raxml-ng paml mafft fasttree seqkit cd-hit gemmi biopython ete3
+  iqtree raxml-ng paml mafft fasttree \
+  seqkit cd-hit gemmi biopython ete3 \
+  numpy pandas
+```
+For reproducible installation, use `environment.yml`; the manual command below is provided only as an alternative.
+
+After activating the environment, the installed versions of the principal ConsistASR dependencies can be checked with:
+
+```bash
+conda list  | grep -E  \
+'^(iqtree|raxml-ng|paml|seqkit|biopython|gemmi|ete3|numpy|pandas)[[:space:]]'
 ```
 
-The core Python scripts are not expected to depend strongly on the Python minor version, but the environment pins Python to `<3.13` because Treemmer depends on the deprecated `cgi` module, which was removed in Python 3.13.
+The principal command-line programs can also be verified with:
+
+```bash
+command -v iqtree3
+command -v raxml-ng
+command -v codeml
+command -v seqkit
+```
+
+Each command should return the path to the executable within the active ConsistASR environment. The package versions should correspond to those specified in the provided environment.yml file.
+
+The reference environment currently uses Python `>=3.10,<3.13`. The core ConsistASR workflows do not require Treemmer, but this upper bound also preserves compatibility with the optional Treemmer-based preclustering workflow, which relies on the `cgi` module removed from the Python standard library in Python 3.13.
 
 ### 2. Additional tools
 
@@ -171,7 +199,6 @@ Key tool versions used during testing:
 | --------- | ----------------------- |
 | IQ-TREE   | 3.0.1 / 3.0.1           |
 | RAxML-NG  | 1.2.2 / 1.2.2           |
-| RAxML-HPC | 8.2.13* / 8.2.13         |
 | PAML      | 4.10.7 / 4.10.7         |
 | MAFFT     | 7.525 / 7.525           |
 | FastTree  | 2.2.0 / 2.2.0           |
@@ -182,7 +209,6 @@ Key tool versions used during testing:
 | ETE3      | 3.1.3 / 3.1.3           |
 | Treemmer  | 0.3 (GitHub)            |
 
-\* The Bioconda raxml 8.2.13 package reports "RAxML version 8.2.12" in the executable banner on the tested macOS environment.
 
 Other versions will probably work, but these are the versions we actually used to validate the examples in `iqtree_pipeline/examples` and `raxml_paml_pipeline/examples`.
 
@@ -194,7 +220,7 @@ In ConsistASR, “raw ASR” refers to ancestral amino-acid states directly extr
 
 ### 1. IQ-TREE indel-aware pipeline
 
-`iqtree_pipeline/indel_aware/` provides a small wrapper to extract raw ancestral sequences from IQ-TREE `.state` files and to generate **indel-aware ASR** sequences using binary gap-state reconstruction.
+`iqtree_pipeline/indel_aware/` provides a small wrapper to extract raw ancestral sequences from IQ-TREE `.state` files and to generate **indel-aware ancestral sequences** using an independent binary gap-state reconstruction.
 
 * Input:
 
@@ -205,17 +231,19 @@ In ConsistASR, “raw ASR” refers to ancestral amino-acid states directly extr
 
 * Main script: `run_indel_aware_iqtree.sh`
 
-  * Converts MSA to a binary (0/1) gap matrix (`msa_to_binary.py`)
-  * Evaluates the topology with RAxML-NG (BIN+G)
-  * Runs RAxML-HPC binary gap-state reconstruction
-  * Maps RAxML internal node IDs back to IQ-TREE node labels (`map_raxml_to_iqtree_nodes.py`)
-  
-* Produces:
+  * Converts the MSA to a binary residue-presence/residue-absence matrix using `common/msa_to_binary.py`
+  * Uses RAxML-NG `--evaluate` with `BIN+G` to re-estimate branch lengths and binary-model parameters while retaining the amino-acid tree topology
+  * Performs binary ancestral-state reconstruction with RAxML-NG `--ancestral`
+  * Validates the RAxML-NG ancestral node labels and alignment-site coordinates against the IQ-TREE `.state` file
+  * Integrates the amino-acid and binary gap-state reconstructions to generate indel-aware ancestral sequences
 
-    * raw ancestral FASTA extracted directly from the IQ-TREE `.state` file
-    * indel-aware ancestral FASTA retaining alignment gaps
-    * gap-stripped indel-aware ancestral FASTA for AlphaFold and downstream analyses
-    * a node mapping table
+* Principal outputs:
+
+  * raw ancestral FASTA files, with and without alignment gaps
+  * indel-aware ancestral FASTA files, with and without reconstructed ancestral gaps
+  * `*_binary_posterior.tsv`, containing posterior probabilities of residue absence and presence
+  * `*_site_posterior.tsv`, containing site-wise integrated amino-acid and binary-state information
+  * `*_indel_nogap_posterior.tsv`, containing posterior information corresponding directly to residues retained in the final gap-stripped ancestral sequences
 
 See [`iqtree_pipeline/indel_aware/README.md`](iqtree_pipeline/indel_aware/README.md) and the toy example in `iqtree_pipeline/examples`.
 
@@ -243,37 +271,41 @@ See [`iqtree_pipeline/indel_aware/README.md`](iqtree_pipeline/indel_aware/README
 These outputs can be visualized in PyMOL or ChimeraX.
 See [`iqtree_pipeline/confmap/README.md`](iqtree_pipeline/confmap/README.md)
 
-The directory also includes `extract_bfactor_from_pdb.py`, which can extract residue-wise B-factor values from the generated PDB files for downstream summary or plotting.
+The shared helper `common/extract_bfactor_from_pdb.py` can be used to extract residue-wise B-factor values from the generated PDB files for downstream summary or plotting.
 
 ---
 
-### 3. RAxML + PAML pipeline
+### 3. RAxML-NG + PAML pipeline
 
-`raxml_paml_pipeline/indel_aware/` and `raxml_paml_pipeline/confmap/` implement an analogous workflow for **PAML-based ASR**. The indel-aware pipeline can extract raw ancestral sequences from PAML `rst` files and generate indel-aware ASR sequences using binary gap-state reconstruction.
+`raxml_paml_pipeline/indel_aware/` and `raxml_paml_pipeline/confmap/` implement an analogous workflow for **PAML-based amino-acid ASR**. The indel-aware pipeline extracts raw ancestral sequences from PAML `rst` files and applies the same RAxML-NG-based binary gap-state reconstruction used by the IQ-TREE workflow.
 
-* Main script: `run_indel_aware_paml.sh`:
+* Main script: `run_indel_aware_paml.sh`
 
-  * Uses a PAML `rst` file and the RAxML tree used for the PAML run
+  * Uses a PAML `rst` file and the corresponding RAxML-NG phylogeny
   * Extracts raw ancestral FASTA directly from the PAML `rst` file
-  * Performs binary gap-state reconstruction with RAxML-HPC
+  * Converts the MSA to a binary residue-presence/residue-absence matrix
+  * Uses RAxML-NG `--evaluate` and `--ancestral` for binary gap-state reconstruction
   * Extracts the PAML internal-node tree from `rst`
-  * Maps RAxML internal nodes to PAML node IDs (`map_raxml_to_paml_nodes_from_rst.py`)
-  
-* Produces:
+  * Maps the non-root PAML ancestral nodes to the corresponding RAxML-NG internal vertices
+  * Excludes the explicit PAML root from the final indel-aware FASTA files while retaining it in the raw PAML ASR output
 
-    * raw ancestral FASTA extracted directly from the PAML `rst` file
-    * indel-aware ancestral FASTA retaining alignment gaps
-    * gap-stripped indel-aware ancestral FASTA for AlphaFold and downstream analyses
-    * a node mapping table
+* Principal outputs:
+
+  * raw ancestral FASTA files, with and without alignment gaps
+  * indel-aware ancestral FASTA files, with and without reconstructed ancestral gaps
+  * `*_binary_posterior.tsv`
+  * `*_site_posterior.tsv`
+  * `*_indel_nogap_posterior.tsv`
+  * `*_node_map.tsv`, recording non-root PAML-to-RAxML-NG node correspondence
 
 * `raxml_paml_pipeline/confmap`:
 
   * `run_confmap_paml.sh` reads a PAML `rst` and a with-gap ancestral FASTA
-  * Extracts PP per alignment column for a given PAML node ID
-  * Maps PP and AlphaFold pLDDT to B-factors (as in the IQ-TREE version)
-  * Outputs PDBs for PP, PP − pLDDT, PP × pLDDT and a statistics log
+  * Extracts posterior probability per alignment column for a selected PAML node
+  * Maps posterior probability and AlphaFold pLDDT to B-factors
+  * Outputs PDB files and summary statistics for PP, pLDDT, PP − pLDDT, and PP × pLDDT
 
-See [`raxml_paml_pipeline/indel_aware/README.md`](raxml_paml_pipeline/indel_aware/README.md), [`raxml_paml_pipeline/confmap/README.md`](raxml_paml_pipeline/confmap/README.md) and `raxml_paml_pipeline/examples`.
+See [`raxml_paml_pipeline/indel_aware/README.md`](raxml_paml_pipeline/indel_aware/README.md) and [`raxml_paml_pipeline/confmap/README.md`](raxml_paml_pipeline/confmap/README.md).
 
 ---
 

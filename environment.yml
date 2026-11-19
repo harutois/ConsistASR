@@ -1,8 +1,9 @@
 name: ConsistASR
+
 channels:
   - conda-forge
   - bioconda
-  - defaults
+  - nodefaults
 
 dependencies:
   # --- Python & core libs ---
@@ -13,7 +14,6 @@ dependencies:
 
   # --- ASR / phylogeny core tools ---
   - iqtree=3.0.1
-  - raxml=8.2.13
   - raxml-ng=1.2.2
   - paml=4.10.7
   - mafft=7.525

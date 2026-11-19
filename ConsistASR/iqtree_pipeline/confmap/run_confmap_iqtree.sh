@@ -42,7 +42,21 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MAP_SCRIPT="${SCRIPT_DIR}/map_confidence_to_bfactor.py"
+CONSISTASR_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+COMMON_DIR="${CONSISTASR_ROOT}/common"
+
+# Prefer a colocated copy for standalone use; otherwise use common/.
+if [[ -f "${SCRIPT_DIR}/map_confidence_to_bfactor.py" ]]; then
+  MAP_SCRIPT="${SCRIPT_DIR}/map_confidence_to_bfactor.py"
+elif [[ -f "${COMMON_DIR}/map_confidence_to_bfactor.py" ]]; then
+  MAP_SCRIPT="${COMMON_DIR}/map_confidence_to_bfactor.py"
+else
+  echo "[ERROR] map_confidence_to_bfactor.py not found." >&2
+  echo "[ERROR] Expected it in either:" >&2
+  echo "[ERROR]   ${SCRIPT_DIR}" >&2
+  echo "[ERROR]   ${COMMON_DIR}" >&2
+  exit 1
+fi
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 

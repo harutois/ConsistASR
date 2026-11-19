@@ -8,8 +8,10 @@ Minimal helper to:
   - run codeml
   - keep all PAML outputs in a specified directory
 
-This is intended as an example script for reproducing the
-toy 7TM rhodopsin PAML ASR used in the ConsistASR examples.
+This is primarily an example helper for reproducing the toy 7TM
+rhodopsin PAML ASR used in the ConsistASR examples. It also permits
+an alternative empirical amino-acid rate file and PAML AA model 2
+(Empirical) or 3 (Empirical+F).
 """
 
 import argparse
@@ -18,9 +20,14 @@ import subprocess
 import sys
 import textwrap
 from io import StringIO
+from pathlib import Path
 from shutil import which
 
 from Bio import Phylo
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+BUNDLED_LG = SCRIPT_DIR / "ASR" / "lg.dat"
 
 
 def count_fasta_sequences(fasta_path):
@@ -119,15 +126,33 @@ def main():
     )
 
     ap.add_argument(
-        "--aa-ratefile",
-        default="lg.dat",
+        "--model",
+        type=int,
+        choices=(2, 3),
+        default=3,
         help=(
-            "Amino-acid rate file for the empirical+F model "
-            "(default: lg.dat)."
+            "PAML amino-acid model: 2=Empirical, 3=Empirical+F "
+            "(default: 3)."
+        ),
+    )
+
+    ap.add_argument(
+        "--aa-ratefile",
+        default=str(BUNDLED_LG),
+        help=(
+            "Empirical amino-acid rate file used by codeml. "
+            "By default, the bundled toy-example ASR/lg.dat is used. "
+            "An alternative PAML-compatible rate file may be supplied."
         ),
     )
 
     args = ap.parse_args()
+
+    # Resolve input paths before changing the working directory for codeml.
+    args.msa = os.path.abspath(args.msa)
+    args.tree = os.path.abspath(args.tree)
+    args.aa_ratefile = os.path.abspath(args.aa_ratefile)
+    args.outdir = os.path.abspath(args.outdir)
 
     # Basic input checks.
     for path in [args.msa, args.tree, args.aa_ratefile]:
@@ -190,7 +215,7 @@ def main():
 
     seqtype = 2
 
-    model = 3
+    model = {args.model}
     aaRatefile = {aa_rate_rel}
 
     fix_alpha = 0
@@ -205,6 +230,9 @@ def main():
     with open(ctl_path, "w") as f:
         f.write(textwrap.dedent(ctl_text))
 
+    model_name = "Empirical" if args.model == 2 else "Empirical+F"
+    print(f"[INFO] PAML AA model: {args.model} ({model_name})")
+    print(f"[INFO] Amino-acid rate file: {args.aa_ratefile}")
     print(f"[INFO] Wrote ctl: {ctl_path}")
     print(f"[INFO] Running codeml in: {args.outdir}")
 

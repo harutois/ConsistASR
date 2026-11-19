@@ -6,8 +6,10 @@
 # gap-state representation for RAxML / RAxML-NG.
 #
 # Specification:
-#   - gap ('-')        → 0
-#   - any non-gap char → 1
+#   - gap ('-')                         → 0
+#   - standard amino acids             → 1
+#   - ambiguity/unknown codes B/Z/J/X  → 1
+#   - any other character              → ERROR
 #   - fully gapped columns are NOT removed
 #   - output is a simple PHYLIP-like format
 #
@@ -16,8 +18,11 @@
 #     (anything after the first whitespace is ignored).
 #   - Sequence IDs must be unique after this first-token parsing.
 #   - Input sequences must all have the same alignment length.
-#   - Input should be a standard amino-acid MSA containing
-#     amino-acid characters (including X if present) and '-' gaps.
+#   - Lowercase amino-acid letters are accepted and interpreted
+#     equivalently to uppercase letters.
+#   - Only '-' is interpreted as an alignment gap. Symbols such as
+#     '.', '?', '~', '*', and '!' are rejected rather than silently
+#     encoded as residue presence.
 #
 # Usage:
 #   python msa_to_binary.py input.fasta output_binary.phy
@@ -25,6 +30,13 @@
 
 import sys
 from collections import OrderedDict
+
+
+# Standard amino acids plus common ambiguity/unknown residue codes.
+# These symbols indicate that a residue is present at the alignment
+# position even if its exact amino-acid identity is uncertain.
+VALID_PRESENT = set("ACDEFGHIKLMNPQRSTVWYBZJX")
+GAP_CHAR = "-"
 
 
 def read_fasta(filename):
@@ -89,18 +101,44 @@ def to_binary(msa_dict):
     Convert an MSA dictionary {name: amino_acid_sequence}
     into a binary dictionary {name: 0/1 sequence}.
 
-    '-' is encoded as 0; every other character is encoded as 1.
+    Encoding
+    --------
+    '-'                    -> 0
+    standard AA/B/Z/J/X   -> 1
+    any other character   -> error
+
+    Lowercase amino-acid letters are accepted by converting them
+    to uppercase for validation.
     """
     binary_dict = OrderedDict()
 
     for name, seq in msa_dict.items():
         binary_seq = []
 
-        for c in seq:
-            if c == "-":
+        for position, raw_char in enumerate(seq, start=1):
+            char = raw_char.upper()
+
+            if char == GAP_CHAR:
                 binary_seq.append("0")
-            else:
+
+            elif char in VALID_PRESENT:
                 binary_seq.append("1")
+
+            else:
+                hint = ""
+
+                if raw_char in {".", "?", "~", "*", "!"}:
+                    hint = (
+                        " Only '-' is accepted as an alignment gap; "
+                        "missing/other special symbols are not assigned "
+                        "a binary presence/absence state automatically."
+                    )
+
+                raise ValueError(
+                    f"Unexpected character '{raw_char}' in sequence "
+                    f"'{name}' at alignment position {position}."
+                    f"{hint}"
+                )
 
         binary_dict[name] = "".join(binary_seq)
 

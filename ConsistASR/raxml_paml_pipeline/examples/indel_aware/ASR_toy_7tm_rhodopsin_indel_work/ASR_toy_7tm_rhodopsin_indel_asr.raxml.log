@@ -1,0 +1,83 @@
+
+RAxML-NG v. 1.2.2 released on 11.04.2024 by The Exelixis Lab.
+Developed by: Alexey M. Kozlov and Alexandros Stamatakis.
+Contributors: Diego Darriba, Tomas Flouri, Benoit Morel, Sarah Lutteropp, Ben Bettisworth, Julia Haag, Anastasis Togkousidis.
+Latest version: https://github.com/amkozlov/raxml-ng
+Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!forum/raxml
+
+System: Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz, 2 cores, 16 GB RAM
+
+RAxML-NG was called at 13-Nov-2026 18:41:01 as follows:
+
+raxml-ng --ancestral --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel --tree ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree --prefix ASR_toy_7tm_rhodopsin_indel_asr --outgroup OG_WP_285271495,OG_WP_136361479 --opt-model off --opt-branches off --seed 12345
+
+Analysis options:
+  run mode: Ancestral state reconstruction
+  start tree(s): user
+  outgroup taxa: OG_WP_285271495,OG_WP_136361479
+  random seed: 12345
+  tip-inner: ON
+  pattern compression: OFF
+  per-rate scalers: OFF
+  site repeats: OFF
+  logLH epsilon: general: 0.100000, brlen-triplet: 1000.000000
+  branch lengths: proportional (user-specified)
+  SIMD kernels: AVX2
+  parallelization: coarse-grained (auto), PTHREADS (auto)
+
+[00:00:00] Reading alignment from file: ASR_toy_7tm_rhodopsin_binary.phy
+[00:00:00] Loaded alignment with 18 taxa and 343 sites
+
+WARNING: Sequences HeR_WP_100389406 and HeR_WP_066598408 are exactly identical!
+WARNING: Sequences SzR_HDR73074 and SzR_TFH15433 are exactly identical!
+WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical!
+WARNING: Duplicate sequences found: 3
+
+NOTE: Reduced alignment (with duplicates and gap-only sites/taxa removed) 
+NOTE: was saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.reduced.phy
+
+NOTE: The corresponding reduced partition file was saved to:
+/Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.reduced.partition
+
+Alignment comprises 1 partitions and 343 sites
+
+Partition 0: noname
+Model: BIN{1}+FU{0.21315/0.78685}+G4m{2.24233}
+Alignment sites: 343
+Gaps: 0.00 %
+Invariant sites: 53.35 %
+
+
+NOTE: Binary MSA file created: ASR_toy_7tm_rhodopsin_indel_asr.raxml.rba
+
+Parallelization scheme autoconfig: 1 worker(s) x 2 thread(s)
+
+[00:00:00] Loading user starting tree(s) from: ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
+Parallel reduction/worker buffer size: 1 KB  / 0 KB
+
+[00:00:00] Data distribution: max. partitions/sites/weight per thread: 1 / 172 / 1376
+[00:00:00] Data distribution: max. searches per worker: 1
+
+Starting ML tree search with 1 distinct starting trees
+
+
+[00:00:00] Tree #1, final logLikelihood: -1052.481945
+
+
+Optimized model parameters:
+
+   Partition 0: noname
+   Rate heterogeneity: GAMMA (4 cats, mean),  alpha: 2.242328 (user),  weights&rates: (0.250000,0.320581) (0.250000,0.678534) (0.250000,1.075019) (0.250000,1.925865) 
+   Base frequencies (user): 0.213150 0.786850 
+   Substitution rates (user): 1.000000 
+
+Marginal ancestral probabilities saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.ancestralProbs
+Reconstructed ancestral sequences saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.ancestralStates
+Node-labeled tree saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.ancestralTree
+
+Execution log saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_asr.raxml.log
+
+Analysis started: 13-Nov-2026 18:41:01 / finished: 13-Nov-2026 18:41:01
+
+Elapsed time: 0.083 seconds
+

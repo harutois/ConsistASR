@@ -7,7 +7,7 @@ Questions/problems/suggestions? Please visit: https://groups.google.com/forum/#!
 
 System: Intel(R) Core(TM) i7-7Y75 CPU @ 1.30GHz, 2 cores, 16 GB RAM
 
-RAxML-NG was called at 28-Sep-2026 15:10:59 as follows:
+RAxML-NG was called at 13-Nov-2026 18:41:01 as follows:
 
 raxml-ng --evaluate --msa ASR_toy_7tm_rhodopsin_binary.phy --msa-format PHYLIP --model BIN+G --tree ASR_toy_7tm_rhodopsin_indel_work/input_tree.lf.nwk --prefix ASR_toy_7tm_rhodopsin_indel_eval --outgroup OG_WP_285271495,OG_WP_136361479 --seed 12345
 
@@ -34,7 +34,7 @@ WARNING: Sequences SzR_AM_5_00977 and SzR_TE_5S_00009 are exactly identical!
 WARNING: Duplicate sequences found: 3
 
 NOTE: Reduced alignment (with duplicates and gap-only sites/taxa removed) 
-NOTE: was saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
+NOTE: was saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.reduced.phy
 
 Alignment comprises 1 partitions and 44 patterns
 
@@ -80,13 +80,13 @@ Free parameters (model + branch lengths): 35
 
 WARNING: Best ML tree contains 6 near-zero branches!
 
-Best ML tree with collapsed near-zero branches saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
-Best ML tree saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
-Optimized model saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
+Best ML tree with collapsed near-zero branches saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTreeCollapsed
+Best ML tree saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestTree
+Optimized model saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.bestModel
 
-Execution log saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/forBioProtocol/PAML/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
+Execution log saved to: /Volumes/DATA_SSD/ASR/_ConsistASR_local/test/v114_forBioProtocol_revise/ConsistASR/ConsistASR/raxml_paml_pipeline/examples/indel_aware/ASR_toy_7tm_rhodopsin_indel_eval.raxml.log
 
-Analysis started: 28-Sep-2026 15:10:59 / finished: 28-Sep-2026 15:10:59
+Analysis started: 13-Nov-2026 18:41:01 / finished: 13-Nov-2026 18:41:01
 
-Elapsed time: 0.049 seconds
+Elapsed time: 0.040 seconds
 
